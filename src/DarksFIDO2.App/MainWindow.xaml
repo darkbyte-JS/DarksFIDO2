@@ -1,0 +1,439 @@
+<Window x:Class="DarksFIDO2.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Darks FIDO2"
+        Height="800" Width="1280"
+        MinHeight="680" MinWidth="1000"
+        Icon="Assets/DarksFIDO2.ico"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        Background="{DynamicResource WindowBrush}">
+    <Grid x:Name="Root" Background="{DynamicResource WindowBrush}" ClipToBounds="True">
+        <!-- The new Aurora is static and low-cost: color stays behind opaque surfaces and never crosses text. -->
+        <Grid x:Name="AuroraBackground" IsHitTestVisible="False" ClipToBounds="True">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                    <GradientStop Color="#060915" Offset="0"/>
+                    <GradientStop Color="#08122B" Offset="0.45"/>
+                    <GradientStop Color="#101B3D" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+            <Ellipse Width="980" Height="760" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-330,-260,0" Opacity="0.52">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#8B5CF6" Offset="0"/>
+                        <GradientStop Color="#325B46D7" Offset="0.48"/>
+                        <GradientStop Color="#005B46D7" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="820" Height="700" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-300,0,0,-340" Opacity="0.56">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#22D3EE" Offset="0"/>
+                        <GradientStop Color="#2240CBE8" Offset="0.5"/>
+                        <GradientStop Color="#0022D3EE" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Path Data="M 0,590 C 280,420 500,690 760,535 C 990,400 1180,435 1420,310 L 1420,820 L 0,820 Z"
+                  Stretch="Fill" VerticalAlignment="Bottom" Height="340" Opacity="0.12">
+                <Path.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#22D3EE" Offset="0"/>
+                        <GradientStop Color="#7C3AED" Offset="1"/>
+                    </LinearGradientBrush>
+                </Path.Fill>
+            </Path>
+        </Grid>
+
+        <Grid x:Name="WelcomeLayer" Panel.ZIndex="30" Background="{DynamicResource WindowBrush}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border Width="116" Height="116"
+                        CornerRadius="32"
+                        Background="{DynamicResource AccentSurfaceBrush}"
+                        BorderBrush="{DynamicResource AccentBrush}"
+                        BorderThickness="1"
+                        Padding="10"
+                        Margin="0,0,0,24">
+                    <Image Source="Assets/darks-fido2-logo.png" Stretch="Uniform"/>
+                </Border>
+                <TextBlock Text="Darks FIDO2"
+                           FontFamily="Segoe UI Variable Display"
+                           FontWeight="SemiBold"
+                           FontSize="42"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Private passkeys. Clear control."
+                           FontSize="17"
+                           Foreground="{DynamicResource MutedBrush}"
+                           HorizontalAlignment="Center"
+                           Margin="0,10,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid x:Name="GateLayer" Visibility="Collapsed" Panel.ZIndex="20" Margin="32">
+            <Border Width="980" MaxWidth="980" MinHeight="570"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CardStyle}"
+                    Padding="0"
+                    Background="{DynamicResource PanelBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.92*"/>
+                        <ColumnDefinition Width="1.08*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Margin="14"
+                            CornerRadius="14"
+                            Background="{DynamicResource AccentSurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            Padding="42">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="62" Height="62"
+                                        CornerRadius="18"
+                                        Background="{DynamicResource PanelBrush}"
+                                        Padding="5"
+                                        Margin="0,0,16,0">
+                                    <Image Source="Assets/darks-fido2-logo.png" Stretch="Uniform"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Darks FIDO2" FontSize="21" FontWeight="SemiBold"/>
+                                    <TextBlock Text="LOCAL AUTHENTICATION VAULT"
+                                               FontSize="10"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                                <TextBlock Text="Your identity stays&#x0a;under your control."
+                                           FontFamily="Segoe UI Variable Display"
+                                           FontSize="34"
+                                           FontWeight="SemiBold"
+                                           LineHeight="42"/>
+                                <TextBlock Text="Passkeys, TOTP seeds, and hardware-backed keys are isolated by profile and encrypted locally."
+                                           Foreground="{DynamicResource MutedBrush}"
+                                           TextWrapping="Wrap"
+                                           FontSize="15"
+                                           LineHeight="23"
+                                           Margin="0,18,0,0"/>
+                                <StackPanel Margin="0,28,0,0">
+                                    <TextBlock Text="●  No cloud account required" Foreground="{DynamicResource SuccessBrush}" Margin="0,0,0,10"/>
+                                    <TextBlock Text="●  TPM-backed when available" Foreground="{DynamicResource SuccessBrush}" Margin="0,0,0,10"/>
+                                    <TextBlock Text="●  Profile-bound passkey isolation" Foreground="{DynamicResource SuccessBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Button Grid.Row="2"
+                                    Style="{StaticResource LinkButton}"
+                                    HorizontalAlignment="Left"
+                                    Content="github.com/darkbyte-JS  ↗"
+                                    Click="GitHub_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <ScrollViewer Grid.Column="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="46,44,46,38" VerticalAlignment="Center">
+                            <TextBlock x:Name="GateTitle"
+                                       Text="Unlock your vault"
+                                       FontFamily="Segoe UI Variable Display"
+                                       FontSize="30"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock x:Name="GateSubtitle"
+                                       Text="Select a profile and enter its credentials."
+                                       Foreground="{DynamicResource MutedBrush}"
+                                       Margin="0,8,0,28"
+                                       TextWrapping="Wrap"
+                                       LineHeight="21"/>
+
+                            <TextBlock Text="PROFILE"
+                                       Foreground="{DynamicResource SubtleTextBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0,0,0,7"/>
+                            <ComboBox x:Name="ProfilePicker"
+                                      SelectionChanged="ProfilePicker_SelectionChanged"
+                                      Margin="0,0,0,18">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="34"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="26" Height="26"
+                                                    CornerRadius="8"
+                                                    Background="{DynamicResource AccentSurfaceBrush}"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="D"
+                                                           Foreground="{DynamicResource AccentBrush}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Name}"
+                                                       Foreground="{DynamicResource InputTextBrush}"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="Encrypted"
+                                                       Foreground="{DynamicResource SubtleTextBrush}"
+                                                       FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       Margin="12,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <TextBlock Text="PIN OR PASSPHRASE"
+                                       Foreground="{DynamicResource SubtleTextBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0,0,0,7"/>
+                            <PasswordBox x:Name="PinBox"
+                                         Margin="0,0,0,18"
+                                         KeyDown="PinBox_KeyDown"/>
+
+                            <Grid x:Name="KeyfileRow" Visibility="Collapsed" Margin="0,0,0,18">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="KeyfilePathBox"
+                                         IsReadOnly="True"/>
+                                <Button Grid.Column="1"
+                                        Content="Choose keyfile…"
+                                        Click="ChooseKeyfile_Click"
+                                        Margin="9,0,0,0"/>
+                            </Grid>
+
+                            <Border Background="{DynamicResource DangerSurfaceBrush}"
+                                    BorderBrush="{DynamicResource DangerBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="9"
+                                    Padding="11,8"
+                                    Margin="0,0,0,15">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=GateError}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock x:Name="GateError"
+                                           Foreground="{DynamicResource DangerBrush}"
+                                           TextWrapping="Wrap"/>
+                            </Border>
+
+                            <StackPanel x:Name="UnlockProgress"
+                                        Visibility="Collapsed"
+                                        Margin="0,0,0,14">
+                                <TextBlock x:Name="UnlockStatusText"
+                                           Text="Unlocking and verifying your vaultâ€¦"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,7"/>
+                                <ProgressBar IsIndeterminate="True"
+                                             Height="5"/>
+                            </StackPanel>
+
+                            <WrapPanel>
+                                <Button x:Name="UnlockButton"
+                                        Content="Unlock vault"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="Unlock_Click"/>
+                                <Button x:Name="RecoveryButton"
+                                        Content="Recovery code"
+                                        Click="Recovery_Click"
+                                        Visibility="Collapsed"/>
+                                <Button x:Name="CreateProfileButton"
+                                        Content="Create profile"
+                                        Click="CreateProfile_Click"/>
+                            </WrapPanel>
+                            <TextBlock Text="Ctrl+L locks instantly and clears decrypted key material."
+                                       Foreground="{DynamicResource SubtleTextBrush}"
+                                       FontSize="12"
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="Shell" Visibility="Collapsed" Panel.ZIndex="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="276"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Background="{DynamicResource SidePanelBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="0,0,1,0"
+                    Padding="18">
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top">
+                        <Grid Margin="4,4,4,28">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="42" Height="42"
+                                    CornerRadius="13"
+                                    Background="{DynamicResource AccentSurfaceBrush}"
+                                    Padding="4">
+                                <Image Source="Assets/darks-fido2-logo.png" Stretch="Uniform"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="11,0,0,0">
+                                <TextBlock Text="Darks FIDO2" FontSize="18" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="SideProfileName"
+                                           Foreground="{DynamicResource MutedBrush}"
+                                           FontSize="12"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="VAULT"
+                                   Foreground="{DynamicResource SubtleTextBrush}"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Margin="12,0,0,9"/>
+                        <Button x:Name="FidoNav" Style="{StaticResource NavButton}" Click="Fido_Click"
+                                Background="{DynamicResource AccentSurfaceBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}">
+                            <StackPanel>
+                                <TextBlock Text="Passkeys &amp; FIDO2" FontWeight="SemiBold"/>
+                                <TextBlock Text="Create and manage credentials" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="DashboardNav" Style="{StaticResource NavButton}" Click="Dashboard_Click">
+                            <StackPanel>
+                                <TextBlock Text="Overview" FontWeight="SemiBold"/>
+                                <TextBlock Text="Security and vault health" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="TotpNav" Style="{StaticResource NavButton}" Click="Totp_Click">
+                            <StackPanel>
+                                <TextBlock Text="2FA authenticator" FontWeight="SemiBold"/>
+                                <TextBlock Text="TOTP codes and QR import" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="TpmNav" Style="{StaticResource NavButton}" Click="Tpm_Click">
+                            <StackPanel>
+                                <TextBlock Text="Advanced TPM keys" FontWeight="SemiBold"/>
+                                <TextBlock Text="Hardware-bound key tools" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="SettingsNav" Style="{StaticResource NavButton}" Click="Settings_Click">
+                            <StackPanel>
+                                <TextBlock Text="Settings &amp; audit" FontWeight="SemiBold"/>
+                                <TextBlock Text="Profile, backup, and reports" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <Border CornerRadius="12"
+                                Background="{DynamicResource PanelBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                Padding="12"
+                                Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="ACTIVE PROTECTION"
+                                           Foreground="{DynamicResource SuccessBrush}"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           />
+                                <TextBlock x:Name="SecurityModeText"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource MutedBrush}"
+                                           FontSize="11"
+                                           LineHeight="17"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Button Style="{StaticResource LinkButton}"
+                                HorizontalAlignment="Left"
+                                Content="GitHub · darkbyte-JS  ↗"
+                                Click="GitHub_Click"
+                                Margin="5,0,0,8"/>
+                        <Button Content="Lock now     Ctrl+L"
+                                HorizontalContentAlignment="Left"
+                                Click="Lock_Click"
+                                Margin="0"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="92"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Background="{DynamicResource HeaderBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="32,18">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="PageTitle"
+                                       Text="Passkeys &amp; FIDO2"
+                                       FontFamily="Segoe UI Variable Display"
+                                       FontSize="26"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock x:Name="PageSubtitle"
+                                       Text="Passwordless authentication"
+                                       Foreground="{DynamicResource MutedBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1"
+                                Style="{StaticResource StatusPill}"
+                                Background="{DynamicResource SuccessSurfaceBrush}"
+                                BorderBrush="{DynamicResource SuccessBrush}"
+                                Margin="24,0,0,0">
+                            <TextBlock x:Name="HeaderStatus"
+                                       Text="●  Vault unlocked"
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="0">
+                    <StackPanel x:Name="ContentPanel"
+                                MaxWidth="1120"
+                                HorizontalAlignment="Stretch"
+                                Margin="32,28,32,56"/>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
