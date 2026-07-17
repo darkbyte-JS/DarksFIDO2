@@ -4,6 +4,8 @@ Darks FIDO2 is a local-only Windows desktop manager for FIDO2/WebAuthn registrat
 
 Project and author: [github.com/darkbyte-JS](https://github.com/darkbyte-JS)
 
+License: [Apache License 2.0](LICENSE)
+
 ## Run
 
 - Installer: run `DarksFIDO2-Setup.exe` and approve the administrator prompt. Application binaries are installed under protected `Program Files`; encrypted user data remains under the current account's LocalAppData. The setup creates Start menu/Desktop shortcuts and a Windows uninstall entry.
@@ -120,3 +122,13 @@ $env:DOTNET_EXE = (Get-Command dotnet).Source
 ```
 
 Build order uses one codebase: self-contained publish → sign portable executables → package/sign the provider → generate the per-file payload manifest → ZIP → embed that same ZIP in setup → publish and sign setup.
+
+## Contributors
+
+Darks FIDO2 is created and maintained by [darkbyte-JS](https://github.com/darkbyte-JS). Code, security review, testing, documentation, and design contributions are welcome. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the contributor list and submission expectations.
+
+## License
+
+Copyright 2026 darkbyte-JS and the Darks FIDO2 contributors.
+
+Licensed under the [Apache License, Version 2.0](LICENSE). The license permits use, modification, and distribution subject to its terms, includes an explicit patent grant from contributors, and provides the applicable warranty and liability disclaimers.
