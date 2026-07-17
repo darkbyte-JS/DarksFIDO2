@@ -16,11 +16,14 @@ $out = Join-Path $artifacts 'release'
 Remove-Item $artifacts -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $portable, $payload, $out -ItemType Directory -Force | Out-Null
 
+& $dotnet restore (Join-Path $root 'DarksFIDO2.slnx') --locked-mode
+if ($LASTEXITCODE -ne 0) { throw 'Locked dependency restore failed.' }
+
 # Keep the GUI self-contained but multi-file. A single-file WPF bundle extracts a full
 # runtime on first launch after every upgrade, which made this small UI appear to hang.
-& $dotnet publish (Join-Path $root 'src\DarksFIDO2.App\DarksFIDO2.App.csproj') -c $Configuration -r $Runtime --self-contained true -p:PublishSingleFile=false -p:PublishReadyToRun=true -p:DebugType=None -o $portable
-& $dotnet publish (Join-Path $root 'src\DarksFIDO2.Cli\DarksFIDO2.Cli.csproj') -c $Configuration -r $Runtime --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o $portable
-& $dotnet publish (Join-Path $root 'src\DarksFIDO2.Provider\DarksFIDO2.Provider.csproj') -c $Configuration -r $Runtime --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o $portable
+& $dotnet publish (Join-Path $root 'src\DarksFIDO2.App\DarksFIDO2.App.csproj') -c $Configuration -r $Runtime --self-contained true --no-restore -p:PublishSingleFile=false -p:PublishReadyToRun=true -p:DebugType=None -o $portable
+& $dotnet publish (Join-Path $root 'src\DarksFIDO2.Cli\DarksFIDO2.Cli.csproj') -c $Configuration -r $Runtime --self-contained true --no-restore -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o $portable
+& $dotnet publish (Join-Path $root 'src\DarksFIDO2.Provider\DarksFIDO2.Provider.csproj') -c $Configuration -r $Runtime --self-contained true --no-restore -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o $portable
 Copy-Item (Join-Path $root 'src\DarksFIDO2.App\Assets\favicon.ico') (Join-Path $portable 'favicon.ico') -Force
 Copy-Item (Join-Path $root 'src\DarksFIDO2.App\Assets\favicon.png') (Join-Path $portable 'favicon.png') -Force
 Set-Content (Join-Path $portable 'portable.mode') 'Darks FIDO2 portable data stays beside the executable.' -Encoding ASCII
@@ -61,7 +64,7 @@ $portableZip = Join-Path $out 'DarksFIDO2-Portable.zip'
 Compress-Archive -Path (Join-Path $portable '*') -DestinationPath $portableZip -CompressionLevel Optimal
 Copy-Item $portableZip (Join-Path $payload 'DarksFIDO2-Portable.zip') -Force
 
-& $dotnet publish (Join-Path $root 'src\DarksFIDO2.Setup\DarksFIDO2.Setup.csproj') -c $Configuration -r $Runtime --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o (Join-Path $artifacts 'setup')
+& $dotnet publish (Join-Path $root 'src\DarksFIDO2.Setup\DarksFIDO2.Setup.csproj') -c $Configuration -r $Runtime --self-contained true --no-restore -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o (Join-Path $artifacts 'setup')
 $setup = Join-Path $artifacts 'setup\DarksFIDO2-Setup.exe'
 & $signTool sign /sha1 $CertificateThumbprint /fd SHA256 /tr $TimestampServer /td SHA256 $setup | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Setup signing failed.' }
