@@ -12,11 +12,15 @@ $artifacts = Join-Path $root 'artifacts'
 $portable = Join-Path $artifacts 'portable'
 $payload = Join-Path $root 'src\DarksFIDO2.Setup\Payload'
 $out = Join-Path $artifacts 'release'
+$providerProject = Join-Path $root 'src\DarksFIDO2.Provider\DarksFIDO2.Provider.csproj'
+[xml]$providerProjectXml = Get-Content -LiteralPath $providerProject -Raw
+$version = @($providerProjectXml.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+if (!$version) { throw 'The provider project version is missing.' }
 
 Remove-Item $artifacts -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $portable, $payload, $out -ItemType Directory -Force | Out-Null
 
-& $dotnet restore (Join-Path $root 'DarksFIDO2.slnx') --locked-mode
+& $dotnet restore (Join-Path $root 'DarksFIDO2.slnx') --locked-mode -r $Runtime -p:PublishReadyToRun=true
 if ($LASTEXITCODE -ne 0) { throw 'Locked dependency restore failed.' }
 
 # Keep the GUI self-contained but multi-file. A single-file WPF bundle extracts a full
@@ -42,6 +46,7 @@ foreach ($name in 'DarksFIDO2.exe','darksfido-cli.exe','DarksFIDO2.Provider.exe'
 & (Join-Path $PSScriptRoot 'build-provider-package.ps1') -ProviderExecutable (Join-Path $portable 'DarksFIDO2.Provider.exe') -OutputPath $providerPackage -CertificateThumbprint $CertificateThumbprint -MakeAppx $makeAppx -SignTool $signTool -TimestampServer $TimestampServer
 Copy-Item $providerPackage (Join-Path $portable 'DarksFIDO2.Provider.msix') -Force
 Copy-Item $providerPackage (Join-Path $payload 'DarksFIDO2.Provider.msix') -Force
+Copy-Item $providerPackage (Join-Path $out 'DarksFIDO2.Provider.msix') -Force
 $certificatePath = Join-Path $out 'DarksFIDO2-Signing-Public.cer'
 Export-Certificate -Cert ("Cert:\CurrentUser\My\" + $CertificateThumbprint) -FilePath $certificatePath -Force | Out-Null
 
@@ -69,4 +74,17 @@ $setup = Join-Path $artifacts 'setup\DarksFIDO2-Setup.exe'
 & $signTool sign /sha1 $CertificateThumbprint /fd SHA256 /tr $TimestampServer /td SHA256 $setup | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Setup signing failed.' }
 Copy-Item $setup (Join-Path $out 'DarksFIDO2-Setup.exe') -Force
+$releaseNotes = Join-Path $root "RELEASE-NOTES-$version.md"
+$securityAudit = Join-Path $root "SECURITY-AUDIT-$version.md"
+if (!(Test-Path -LiteralPath $releaseNotes) -or !(Test-Path -LiteralPath $securityAudit)) {
+    throw "Release notes and security audit are required for version $version."
+}
+Copy-Item $releaseNotes, $securityAudit -Destination $out -Force
+$checksumLines = Get-ChildItem -LiteralPath $out -File |
+    Sort-Object Name |
+    ForEach-Object { "$(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | Select-Object -ExpandProperty Hash) *$($_.Name)" }
+[IO.File]::WriteAllLines(
+    (Join-Path $out 'SHA256SUMS.txt'),
+    [string[]]$checksumLines,
+    [Text.UTF8Encoding]::new($false))
 Get-ChildItem $out | Select-Object Name, Length, LastWriteTime
