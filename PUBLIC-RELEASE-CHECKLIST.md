@@ -29,5 +29,5 @@ Use this checklist before pushing or attaching binaries to a GitHub release.
 ## Publish
 
 - Review `SECURITY.md`, the current `SECURITY-AUDIT-*.md`, and the matching release notes.
-- Choose and add an explicit repository license before inviting third-party reuse; no license has been selected automatically.
+- Confirm `LICENSE`, `NOTICE`, and the README still identify Apache License 2.0.
 - Create the GitHub release from a reviewed tag and attach only the contents intended for public distribution.

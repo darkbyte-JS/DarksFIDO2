@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security report
+    url: https://github.com/darkbyte-JS/DarksFIDO2/security/advisories/new
+    about: Report suspected vulnerabilities privately; do not open a public issue.
