@@ -11,7 +11,7 @@ Before a public release:
 3. Build from a clean, pinned CI runner.
 4. Sign every executable and the installer with a trusted publisher certificate and timestamping service.
 5. Verify Authenticode, hashes, portable-mode writes, installer/uninstaller behavior, and SmartScreen reputation.
-6. Commission an independent security review; version 0.6.1 and its passkey-provider protocol handling have not been independently audited.
+6. Commission a third-party independent security review. Version 0.6.2 includes a focused maintainer review and adversarial regression tests for CTAP CBOR and Windows WebAuthn handling, but that work is not a substitute for an external audit.
 7. Run `git log --all -- '*.pfx' '*.p12'` and a tracked-file private-key scan. If a private signing key ever entered history, revoke/rotate it and purge every historical object and fork.
 
 ## Threat-model boundaries

@@ -12,7 +12,7 @@
     <AssemblyName>darksfido-cli</AssemblyName>
     <ApplicationIcon>..\DarksFIDO2.App\Assets\DarksFIDO2.ico</ApplicationIcon>
     <RootNamespace>DarksFIDO2.Cli</RootNamespace>
-    <Version>0.6.1</Version>
+    <Version>0.6.2</Version>
   </PropertyGroup>
 
 </Project>

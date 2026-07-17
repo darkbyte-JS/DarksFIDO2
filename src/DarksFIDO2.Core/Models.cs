@@ -61,6 +61,7 @@ public sealed class FidoKeyRecord
     public string Name { get; set; } = "Security key";
     public string AuthenticatorId { get; set; } = "";
     public string CredentialId { get; set; } = "";
+    public string PublicKeyCoseBase64 { get; set; } = "";
     public string Type { get; set; } = "Roaming / external";
     public string Transport { get; set; } = "USB / NFC / BLE";
     public string Aaguid { get; set; } = "Unknown";

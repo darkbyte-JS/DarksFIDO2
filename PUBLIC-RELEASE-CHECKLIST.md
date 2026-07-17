@@ -28,6 +28,6 @@ Use this checklist before pushing or attaching binaries to a GitHub release.
 
 ## Publish
 
-- Review `SECURITY.md`, `SECURITY-AUDIT-0.6.1.md`, and the release notes.
+- Review `SECURITY.md`, the current `SECURITY-AUDIT-*.md`, and the matching release notes.
 - Choose and add an explicit repository license before inviting third-party reuse; no license has been selected automatically.
 - Create the GitHub release from a reviewed tag and attach only the contents intended for public distribution.

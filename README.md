@@ -31,6 +31,15 @@ License: [Apache License 2.0](LICENSE)
 
 ## Important scope and release notes
 
+## Version 0.6.2 protocol verification hardening
+
+- Corrected Windows WebAuthn ceremonies to require user verification instead of merely preferring it.
+- Stores the canonical ES256 credential public key at registration and cryptographically verifies health-check assertions over authenticator data plus the client-data hash.
+- Rejects mismatched RP-ID hashes, credential IDs, missing UP/UV flags, unsolicited attested/extension data, invalid backup flags, malformed signatures, and non-increasing non-zero signature counters.
+- Enforces CTAP2 canonical CBOR: shortest integer/length encodings, deterministic map-key order, structural duplicate-key rejection, definite lengths, strict UTF-8, and bounded depth, collections, total decoded values, and output size.
+- Validates native WebAuthn counts and pointers before copying, corrects AAGUID byte order, clears temporary unmanaged request buffers, and backfills stored public keys for Darks FIDO2 virtual credentials.
+- Legacy Windows Hello or external credentials created before 0.6.2 must be re-registered before cryptographic health verification because their public key was not previously stored.
+
 ## Version 0.6.1 security hardening
 
 - New vault writes use the profile-bound `DFV2` envelope: the profile identifier is the HKDF salt and is also authenticated as AES-GCM associated data. Existing `DFV1` vaults remain readable and migrate on their next save.

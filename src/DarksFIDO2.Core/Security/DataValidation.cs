@@ -63,6 +63,9 @@ internal static class DataValidation
             Text(item.AuthenticatorId, 0, 4_096, "authenticator identifier");
             Text(item.CredentialId, 1, 4_096, "credential identifier");
             ValidateBase64(item.CredentialId, 1, 2_048, "credential identifier");
+            Text(item.PublicKeyCoseBase64, 0, 8_192, "credential public key");
+            if (item.PublicKeyCoseBase64.Length > 0)
+                ValidateBase64(item.PublicKeyCoseBase64, 1, 4_096, "credential public key");
             Text(item.Type, 0, 256, "credential type");
             Text(item.Transport, 0, 256, "credential transport");
             Text(item.RpId, 0, 253, "credential relying-party identifier");

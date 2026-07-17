@@ -19,7 +19,7 @@
     <AssemblyName>DarksFIDO2</AssemblyName>
     <ApplicationIcon>Assets\DarksFIDO2.ico</ApplicationIcon>
     <RootNamespace>DarksFIDO2.App</RootNamespace>
-    <Version>0.6.1</Version>
+    <Version>0.6.2</Version>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>

@@ -145,7 +145,7 @@ internal static class Program
     {
         using RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\DarksFIDO2", writable: true);
         key.SetValue("DisplayName", AppName);
-        key.SetValue("DisplayVersion", "0.6.1");
+        key.SetValue("DisplayVersion", "0.6.2");
         key.SetValue("Publisher", "Darks FIDO2 Project");
         key.SetValue("InstallLocation", InstallDirectory);
         key.SetValue("DisplayIcon", Path.Combine(InstallDirectory, "DarksFIDO2.exe"));

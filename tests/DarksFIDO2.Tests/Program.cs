@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Diagnostics;
 using System.Text;
@@ -26,6 +27,7 @@ var tests = new List<(string Name, Action Test)>
     ,("Pending passkey confirmation and rejection cleanup", TestPendingPasskeyLifecycle)
     ,("Virtual passkey active-profile binding", TestPasskeyProfileBinding)
     ,("CTAP parser resource limits", TestCtapLimits)
+    ,("WebAuthn RP, credential, flags, signature, and counter validation", TestWebAuthnOutputValidation)
     ,("Backup envelope work-factor limits", TestBackupLimits)
     ,("Tampered profile work-factor rejection", TestMetadataLimits)
     ,("Stale provider context cleanup", TestStaleProviderContext)
@@ -225,6 +227,16 @@ static void TestCtapCbor()
     Dictionary<object, object?> decoded = CtapCbor.Map(CtapCbor.Decode(CtapCbor.Encode(input)));
     Assert(CryptographicOperations.FixedTimeEquals(CtapCbor.Bytes(decoded[1L]), hash), "CBOR byte string changed.");
     Assert(CtapCbor.Text(CtapCbor.Map(decoded[2L])["id"]) == "example.com", "CBOR map changed.");
+
+    byte[] canonical = CtapCbor.Encode(new Dictionary<object, object?>
+    {
+        ["bb"] = 1L,
+        [-1L] = 4L,
+        ["a"] = 2L,
+        [1L] = 3L
+    });
+    Assert(canonical.SequenceEqual(new byte[] { 0xA4, 0x01, 0x03, 0x20, 0x04, 0x61, 0x61, 0x02, 0x62, 0x62, 0x62, 0x01 }),
+        "The CTAP encoder did not sort map keys canonically.");
 }
 
 static void TestSoftwarePasskey(bool requireTpm)
@@ -319,6 +331,99 @@ static void TestCtapLimits()
     AssertThrows<FormatException>(() => CtapCbor.Decode([0x9A, 0xFF, 0xFF, 0xFF, 0xFF]), "A hostile CBOR collection count was accepted.");
     AssertThrows<FormatException>(() => CtapCbor.Decode([0x62, 0xC3, 0x28]), "Invalid UTF-8 in CTAP text was accepted.");
     AssertThrows<FormatException>(() => CtapCbor.Decode([0xA2, 0x01, 0x01, 0x01, 0x02]), "Duplicate CTAP map keys were accepted.");
+    AssertThrows<FormatException>(() => CtapCbor.Decode([0x18, 0x17]), "A non-minimal CTAP integer was accepted.");
+    AssertThrows<FormatException>(() => CtapCbor.Decode([0x58, 0x01, 0x00]), "A non-minimal CTAP length was accepted.");
+    AssertThrows<FormatException>(() => CtapCbor.Decode([0xA2, 0x02, 0x00, 0x01, 0x00]), "An unsorted CTAP map was accepted.");
+    AssertThrows<FormatException>(() => CtapCbor.Decode([0xA2, 0x41, 0x01, 0x00, 0x41, 0x01, 0x01]), "Duplicate CTAP byte-string map keys were accepted.");
+    AssertThrows<FormatException>(() => CtapCbor.Decode([0xA1, 0x81, 0x01, 0x00]), "A composite CTAP map key was accepted.");
+
+    using var hostile = new MemoryStream();
+    hostile.Write([0x99, 0x04, 0x00]);
+    for (int i = 0; i < 1024; i++) hostile.Write([0x84, 0xF6, 0xF6, 0xF6, 0xF6]);
+    AssertThrows<FormatException>(() => CtapCbor.Decode(hostile.ToArray()), "A CTAP document with excessive decoded objects was accepted.");
+    var excessive = Enumerable.Range(0, 1024).Select(_ => (object?)new List<object?> { null, null, null, null }).ToList();
+    AssertThrows<ArgumentException>(() => CtapCbor.Encode(excessive), "The CTAP encoder produced a document its decoder resource limits reject.");
+
+    var fuzz = new Random(0x0C7A_2B02);
+    for (int i = 0; i < 2_000; i++)
+    {
+        byte[] candidate = new byte[fuzz.Next(1, 513)];
+        fuzz.NextBytes(candidate);
+        try { _ = CtapCbor.Decode(candidate); }
+        catch (FormatException) { }
+    }
+}
+
+static void TestWebAuthnOutputValidation()
+{
+    using ECDsa key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+    ECParameters parameters = key.ExportParameters(false);
+    byte[] publicKeyCose = CtapCbor.Encode(new Dictionary<object, object?>
+    {
+        [1L] = 2L,
+        [3L] = -7L,
+        [-1L] = 1L,
+        [-2L] = parameters.Q.X!,
+        [-3L] = parameters.Q.Y!
+    });
+    byte[] credentialId = RandomNumberGenerator.GetBytes(32);
+    byte[] rpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes("darksfido2.local"));
+    byte[] registration = new byte[55 + credentialId.Length + publicKeyCose.Length];
+    rpIdHash.CopyTo(registration, 0);
+    registration[32] = 0x45;
+    RandomNumberGenerator.Fill(registration.AsSpan(37, 16));
+    BinaryPrimitives.WriteUInt16BigEndian(registration.AsSpan(53, 2), (ushort)credentialId.Length);
+    credentialId.CopyTo(registration, 55);
+    publicKeyCose.CopyTo(registration, 55 + credentialId.Length);
+
+    WebAuthnService.RegistrationAuthenticatorData validated =
+        WebAuthnService.ValidateRegistrationAuthenticatorData(registration, credentialId);
+    Assert(validated.PublicKeyCoseBase64 == Convert.ToBase64String(publicKeyCose), "Registration did not retain the verified credential public key.");
+
+    byte[] assertion = new byte[37];
+    rpIdHash.CopyTo(assertion, 0);
+    assertion[32] = 0x05;
+    BinaryPrimitives.WriteUInt32BigEndian(assertion.AsSpan(33, 4), 1);
+    byte[] clientDataHash = RandomNumberGenerator.GetBytes(32);
+    byte[] signedData = new byte[assertion.Length + clientDataHash.Length];
+    assertion.CopyTo(signedData, 0);
+    clientDataHash.CopyTo(signedData, assertion.Length);
+    byte[] signedHash = SHA256.HashData(signedData);
+    byte[] signature = key.SignHash(signedHash, DSASignatureFormat.Rfc3279DerSequence);
+
+    uint counter = WebAuthnService.ValidateAssertionAuthenticatorData(
+        validated.PublicKeyCoseBase64, credentialId, credentialId, assertion, clientDataHash, signature, 0);
+    Assert(counter == 1, "A valid WebAuthn assertion counter was not returned.");
+
+    byte[] wrongRp = assertion.ToArray();
+    wrongRp[0] ^= 0x01;
+    AssertThrows<CryptographicException>(
+        () => WebAuthnService.ValidateAssertionAuthenticatorData(validated.PublicKeyCoseBase64, credentialId, credentialId, wrongRp, clientDataHash, signature, 0),
+        "A WebAuthn assertion for another relying party was accepted.");
+    byte[] missingUv = assertion.ToArray();
+    missingUv[32] = 0x01;
+    AssertThrows<CryptographicException>(
+        () => WebAuthnService.ValidateAssertionAuthenticatorData(validated.PublicKeyCoseBase64, credentialId, credentialId, missingUv, clientDataHash, signature, 0),
+        "A WebAuthn assertion without user verification was accepted.");
+    byte[] wrongCredential = credentialId.ToArray();
+    wrongCredential[0] ^= 0x01;
+    AssertThrows<CryptographicException>(
+        () => WebAuthnService.ValidateAssertionAuthenticatorData(validated.PublicKeyCoseBase64, credentialId, wrongCredential, assertion, clientDataHash, signature, 0),
+        "A WebAuthn assertion from another credential was accepted.");
+    byte[] badSignature = signature.ToArray();
+    badSignature[^1] ^= 0x01;
+    AssertThrows<CryptographicException>(
+        () => WebAuthnService.ValidateAssertionAuthenticatorData(validated.PublicKeyCoseBase64, credentialId, credentialId, assertion, clientDataHash, badSignature, 0),
+        "A WebAuthn assertion with a bad signature was accepted.");
+    AssertThrows<CryptographicException>(
+        () => WebAuthnService.ValidateAssertionAuthenticatorData(validated.PublicKeyCoseBase64, credentialId, credentialId, assertion, clientDataHash, signature, 1),
+        "A non-increasing WebAuthn signature counter was accepted.");
+
+    byte[] wrongRegistrationCredential = registration.ToArray();
+    wrongRegistrationCredential[55] ^= 0x01;
+    AssertThrows<CryptographicException>(
+        () => WebAuthnService.ValidateRegistrationAuthenticatorData(wrongRegistrationCredential, credentialId),
+        "Registration accepted a mismatched embedded credential identifier.");
 }
 
 static void TestBackupLimits()

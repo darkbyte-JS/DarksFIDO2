@@ -7,7 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>DarksFIDO2.Core</AssemblyName>
     <RootNamespace>DarksFIDO2.Core</RootNamespace>
-    <Version>0.6.1</Version>
+    <Version>0.6.2</Version>
   </PropertyGroup>
 
 </Project>

@@ -1189,6 +1189,7 @@ public partial class MainWindow : Window
             foreach (SoftwarePasskeyCredential credential in credentials)
             {
                 string credentialId = Convert.ToBase64String(credential.CredentialId);
+                string publicKeyCoseBase64 = Convert.ToBase64String(_providerStore.PublicCoseKey(credential));
                 FidoKeyRecord? existing = _profile.Data.FidoKeys.FirstOrDefault(k => string.Equals(k.CredentialId, credentialId, StringComparison.Ordinal));
                 if (existing is not null)
                 {
@@ -1197,15 +1198,17 @@ public partial class MainWindow : Window
                     bool recordChanged = existing.RegistrationStatus != credential.RegistrationStatus ||
                                          existing.ConfirmedUtc != credential.ConfirmedUtc ||
                                          existing.LastUsedUtc != credential.LastUsedUtc ||
-                                         existing.SignCounter != credential.SignCount ||
-                                         !string.Equals(existing.RpId, credential.RpId, StringComparison.Ordinal) ||
-                                         !string.Equals(existing.UserName, credential.UserName, StringComparison.Ordinal);
+                                          existing.SignCounter != credential.SignCount ||
+                                          !string.Equals(existing.RpId, credential.RpId, StringComparison.Ordinal) ||
+                                          !string.Equals(existing.UserName, credential.UserName, StringComparison.Ordinal) ||
+                                          !string.Equals(existing.PublicKeyCoseBase64, publicKeyCoseBase64, StringComparison.Ordinal);
                     existing.RegistrationStatus = credential.RegistrationStatus;
                     existing.ConfirmedUtc = credential.ConfirmedUtc;
                     existing.LastUsedUtc = credential.LastUsedUtc;
                     existing.SignCounter = credential.SignCount;
                     existing.RpId = credential.RpId;
                     existing.UserName = credential.UserName;
+                    existing.PublicKeyCoseBase64 = publicKeyCoseBase64;
                     if (becameConfirmed)
                         _profile.Data.AuditLog.Add(new AuditEvent { Type = "FIDO2", Message = $"Confirmed site registration for {existing.Name} after successful authentication." });
                     changed |= recordChanged;
@@ -1218,6 +1221,7 @@ public partial class MainWindow : Window
                     Name = name,
                     AuthenticatorId = "DarksFIDO2.Provider",
                     CredentialId = credentialId,
+                    PublicKeyCoseBase64 = publicKeyCoseBase64,
                     Type = "Darks FIDO2 virtual passkey",
                     Transport = credential.HardwareBacked ? "Internal / TPM-backed" : "Internal / non-exportable Windows key",
                     Aaguid = VirtualProviderAaguid,
