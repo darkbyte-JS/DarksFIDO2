@@ -61,7 +61,11 @@ public sealed class SoftwarePasskeyStore
             if (all.Count >= MaximumCredentials) throw new InvalidOperationException("The passkey store has reached its safety limit.");
             all.Add(credential);
             try { Save(all); }
-            catch { DeleteKey(credential); throw; }
+            catch
+            {
+                try { DeleteKeyIfPresent(credential); } catch { }
+                throw;
+            }
         });
         return Clone(credential);
     }
@@ -176,6 +180,21 @@ public sealed class SoftwarePasskeyStore
     public bool Remove(Guid profileId, byte[] credentialId)
         => profileId == Guid.Empty ? false : RemoveCore(profileId, credentialId);
 
+    public int RemoveProfile(Guid profileId)
+    {
+        if (profileId == Guid.Empty) throw new ArgumentException("A profile is required.", nameof(profileId));
+        return WithStoreLock(() =>
+        {
+            List<SoftwarePasskeyCredential> all = Load();
+            SoftwarePasskeyCredential[] matches = all.Where(item => item.ProfileId == profileId).ToArray();
+            foreach (SoftwarePasskeyCredential match in matches) DeleteKeyIfPresent(match);
+            if (matches.Length == 0) return 0;
+            all.RemoveAll(item => item.ProfileId == profileId);
+            Save(all);
+            return matches.Length;
+        });
+    }
+
     private bool RemoveCore(Guid? profileId, byte[] credentialId)
     {
         if (credentialId is null || credentialId.Length != 32) return false;
@@ -186,9 +205,9 @@ public sealed class SoftwarePasskeyStore
                 (profileId is null || c.ProfileId == profileId) &&
                 CryptographicOperations.FixedTimeEquals(c.CredentialId, credentialId));
             if (match is null) return false;
+            DeleteKeyIfPresent(match);
             all.Remove(match);
             Save(all);
-            DeleteKey(match);
             return true;
         });
     }
@@ -214,9 +233,12 @@ public sealed class SoftwarePasskeyStore
             ? CngKey.Open(credential.ProviderKeyName, credential.HardwareBacked ? TpmProvider : SoftwareProvider)
             : throw new CryptographicException("The passkey provider-key name is invalid.");
 
-    private static void DeleteKey(SoftwarePasskeyCredential credential)
+    private static void DeleteKeyIfPresent(SoftwarePasskeyCredential credential)
     {
-        try { using CngKey key = OpenKey(credential); key.Delete(); } catch { }
+        CngProvider provider = credential.HardwareBacked ? TpmProvider : SoftwareProvider;
+        if (!CngKey.Exists(credential.ProviderKeyName, provider)) return;
+        using CngKey key = OpenKey(credential);
+        key.Delete();
     }
 
     private List<SoftwarePasskeyCredential> Load()

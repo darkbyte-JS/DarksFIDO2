@@ -42,6 +42,8 @@ internal static class Program
             ?? throw new InvalidOperationException("The portable application payload is missing from this setup file.");
         string staging = Path.Combine(Path.GetTempPath(), "DarksFIDO2-Setup-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(staging);
+        string? rollbackDirectory = null;
+        bool previousInstallExisted = false;
         try
         {
             string archive = Path.Combine(staging, "payload.zip");
@@ -52,28 +54,67 @@ internal static class Program
             VerifyExtractedPayload(extracted);
 
             StopInstalledProcesses();
-            DeleteTreeWithoutFollowingReparsePoints(InstallDirectory);
-            Directory.CreateDirectory(InstallDirectory);
-            foreach (string directory in Directory.GetDirectories(extracted, "*", SearchOption.AllDirectories))
-                Directory.CreateDirectory(Path.Combine(InstallDirectory, Path.GetRelativePath(extracted, directory)));
-            foreach (string file in Directory.GetFiles(extracted, "*", SearchOption.AllDirectories))
-                File.Copy(file, Path.Combine(InstallDirectory, Path.GetRelativePath(extracted, file)), overwrite: true);
-            string portableMarker = Path.Combine(InstallDirectory, "portable.mode");
-            if (File.Exists(portableMarker)) File.Delete(portableMarker);
+            previousInstallExisted = Directory.Exists(InstallDirectory);
+            if (previousInstallExisted)
+            {
+                rollbackDirectory = InstallDirectory + ".rollback-" + Guid.NewGuid().ToString("N");
+                Directory.Move(InstallDirectory, rollbackDirectory);
+            }
 
-            string uninstallPath = Path.Combine(InstallDirectory, "Uninstall Darks FIDO2.exe");
-            File.Copy(Environment.ProcessPath!, uninstallPath, overwrite: true);
-            Directory.CreateDirectory(StartMenuDirectory);
-            CreateShortcut(Path.Combine(StartMenuDirectory, "Darks FIDO2.lnk"), Path.Combine(InstallDirectory, "DarksFIDO2.exe"), InstallDirectory);
-            CreateShortcut(DesktopShortcut, Path.Combine(InstallDirectory, "DarksFIDO2.exe"), InstallDirectory);
-            CreateShortcut(Path.Combine(StartMenuDirectory, "Uninstall Darks FIDO2.lnk"), uninstallPath, InstallDirectory, "--uninstall");
-            WriteUninstallEntry(uninstallPath);
-            InstallProviderPackage(staging);
-            DeleteTreeWithoutFollowingReparsePoints(LegacyInstallDirectory);
+            try
+            {
+                Directory.CreateDirectory(InstallDirectory);
+                foreach (string directory in Directory.GetDirectories(extracted, "*", SearchOption.AllDirectories))
+                    Directory.CreateDirectory(Path.Combine(InstallDirectory, Path.GetRelativePath(extracted, directory)));
+                foreach (string file in Directory.GetFiles(extracted, "*", SearchOption.AllDirectories))
+                    File.Copy(file, Path.Combine(InstallDirectory, Path.GetRelativePath(extracted, file)), overwrite: true);
+                string portableMarker = Path.Combine(InstallDirectory, "portable.mode");
+                if (File.Exists(portableMarker)) File.Delete(portableMarker);
+
+                string uninstallPath = Path.Combine(InstallDirectory, "Uninstall Darks FIDO2.exe");
+                File.Copy(Environment.ProcessPath!, uninstallPath, overwrite: true);
+                Directory.CreateDirectory(StartMenuDirectory);
+                CreateShortcut(Path.Combine(StartMenuDirectory, "Darks FIDO2.lnk"), Path.Combine(InstallDirectory, "DarksFIDO2.exe"), InstallDirectory);
+                CreateShortcut(DesktopShortcut, Path.Combine(InstallDirectory, "DarksFIDO2.exe"), InstallDirectory);
+                CreateShortcut(Path.Combine(StartMenuDirectory, "Uninstall Darks FIDO2.lnk"), uninstallPath, InstallDirectory, "--uninstall");
+                WriteUninstallEntry(uninstallPath);
+
+                string? rollbackProviderPackage = rollbackDirectory is null
+                    ? null
+                    : Path.Combine(rollbackDirectory, "DarksFIDO2.Provider.msix");
+                InstallProviderPackage(staging, rollbackProviderPackage);
+            }
+            catch
+            {
+                try { DeleteTreeWithoutFollowingReparsePoints(InstallDirectory); } catch { }
+                if (rollbackDirectory is not null && Directory.Exists(rollbackDirectory))
+                {
+                    Directory.Move(rollbackDirectory, InstallDirectory);
+                    RestoreShellIntegration();
+                }
+                else
+                {
+                    try { File.Delete(DesktopShortcut); } catch { }
+                    try { Directory.Delete(StartMenuDirectory, recursive: true); } catch { }
+                    try { Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\DarksFIDO2", throwOnMissingSubKey: false); } catch { }
+                }
+                throw;
+            }
+
+            if (rollbackDirectory is not null)
+            {
+                try { DeleteTreeWithoutFollowingReparsePoints(rollbackDirectory); } catch { }
+                rollbackDirectory = null;
+            }
+            try { DeleteTreeWithoutFollowingReparsePoints(LegacyInstallDirectory); } catch { }
         }
         finally
         {
             try { Directory.Delete(staging, recursive: true); } catch { }
+            if (!previousInstallExisted && rollbackDirectory is not null)
+            {
+                try { DeleteTreeWithoutFollowingReparsePoints(rollbackDirectory); } catch { }
+            }
         }
         if (!silent)
         {
@@ -143,15 +184,34 @@ internal static class Program
 
     private static void WriteUninstallEntry(string uninstallPath)
     {
+        string version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "Unknown";
+        try
+        {
+            string? detected = System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(InstallDirectory, "DarksFIDO2.exe")).ProductVersion;
+            if (Version.TryParse(detected?.Split('+')[0], out Version? parsed)) version = parsed.ToString(3);
+        }
+        catch { }
         using RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\DarksFIDO2", writable: true);
         key.SetValue("DisplayName", AppName);
-        key.SetValue("DisplayVersion", "0.6.2");
+        key.SetValue("DisplayVersion", version);
         key.SetValue("Publisher", "Darks FIDO2 Project");
         key.SetValue("InstallLocation", InstallDirectory);
         key.SetValue("DisplayIcon", Path.Combine(InstallDirectory, "DarksFIDO2.exe"));
         key.SetValue("UninstallString", '"' + uninstallPath + "\" --uninstall");
         key.SetValue("NoModify", 1, RegistryValueKind.DWord);
         key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
+    }
+
+    private static void RestoreShellIntegration()
+    {
+        string executable = Path.Combine(InstallDirectory, "DarksFIDO2.exe");
+        string uninstallPath = Path.Combine(InstallDirectory, "Uninstall Darks FIDO2.exe");
+        if (!File.Exists(executable) || !File.Exists(uninstallPath)) return;
+        Directory.CreateDirectory(StartMenuDirectory);
+        CreateShortcut(Path.Combine(StartMenuDirectory, "Darks FIDO2.lnk"), executable, InstallDirectory);
+        CreateShortcut(DesktopShortcut, executable, InstallDirectory);
+        CreateShortcut(Path.Combine(StartMenuDirectory, "Uninstall Darks FIDO2.lnk"), uninstallPath, InstallDirectory, "--uninstall");
+        WriteUninstallEntry(uninstallPath);
     }
 
     private static void CreateShortcut(string shortcutPath, string targetPath, string workingDirectory, string arguments = "")
@@ -166,23 +226,73 @@ internal static class Program
         shortcut.Save();
     }
 
-    private static void InstallProviderPackage(string staging)
+    private static void InstallProviderPackage(string staging, string? rollbackPackagePath)
     {
         string packagePath = Path.Combine(staging, "DarksFIDO2.Provider.msix");
         using (Stream package = typeof(Program).Assembly.GetManifestResourceStream("DarksFIDO2.Provider.msix")
             ?? throw new InvalidOperationException("The virtual passkey provider package is missing."))
         using (FileStream output = File.Create(packagePath)) package.CopyTo(output);
+        File.Copy(packagePath, Path.Combine(InstallDirectory, "DarksFIDO2.Provider.msix"), overwrite: true);
         Version packageVersion = ReadProviderPackageVersion(packagePath);
+        ProviderPackageState? previous = ReadInstalledProviderState();
         string escapedPackage = packagePath.Replace("'", "''");
-        RunPowerShell($"$existing=Get-AppxPackage -Name 'DarksFIDO2.Provider'; if (!$existing -or [version]$existing.Version -lt [version]'{packageVersion}') {{ Add-AppxPackage -Path '{escapedPackage}' -ForceApplicationShutdown }}", 120_000);
+        bool packageChanged = previous is null || previous.ParsedVersion < packageVersion;
+        try
+        {
+            RunPowerShell($"$existing=Get-AppxPackage -Name 'DarksFIDO2.Provider'; if (!$existing -or [version]$existing.Version -lt [version]'{packageVersion}') {{ Add-AppxPackage -Path '{escapedPackage}' -ForceApplicationShutdown }}", 120_000);
 
-        string alias = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps", "darksfido2-provider.exe");
-        if (!File.Exists(alias)) throw new InvalidOperationException("Windows did not publish the passkey provider execution alias.");
-        using System.Diagnostics.Process registration = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(alias, "--register") { UseShellExecute = false, CreateNoWindow = true })
-            ?? throw new InvalidOperationException("Unable to register the virtual passkey provider.");
-        if (!registration.WaitForExit(30_000)) { registration.Kill(true); throw new TimeoutException("Virtual passkey registration timed out."); }
-        if (registration.ExitCode != 0 && registration.ExitCode != unchecked((int)0x8009000F))
-            throw new InvalidOperationException($"Windows rejected virtual passkey registration (0x{registration.ExitCode:X8}).");
+            string alias = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps", "darksfido2-provider.exe");
+            if (!File.Exists(alias)) throw new InvalidOperationException("Windows did not publish the passkey provider execution alias.");
+            using System.Diagnostics.Process registration = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(alias, "--register") { UseShellExecute = false, CreateNoWindow = true })
+                ?? throw new InvalidOperationException("Unable to register the virtual passkey provider.");
+            if (!registration.WaitForExit(30_000)) { registration.Kill(true); throw new TimeoutException("Virtual passkey registration timed out."); }
+            if (registration.ExitCode != 0 && registration.ExitCode != unchecked((int)0x8009000F))
+                throw new InvalidOperationException($"Windows rejected virtual passkey registration (0x{registration.ExitCode:X8}).");
+        }
+        catch
+        {
+            if (packageChanged) RollBackProviderPackage(previous, rollbackPackagePath);
+            throw;
+        }
+    }
+
+    private static ProviderPackageState? ReadInstalledProviderState()
+    {
+        string json = RunPowerShellCapture(
+            "$p=Get-AppxPackage -Name 'DarksFIDO2.Provider' | Sort-Object Version -Descending | Select-Object -First 1;" +
+            "if($p){[pscustomobject]@{PackageFullName=$p.PackageFullName;Version=$p.Version.ToString()}|ConvertTo-Json -Compress}",
+            30_000);
+        if (string.IsNullOrWhiteSpace(json)) return null;
+        ProviderPackageState? state = JsonSerializer.Deserialize<ProviderPackageState>(json);
+        return state is not null && Version.TryParse(state.Version, out _) ? state : null;
+    }
+
+    private static void RollBackProviderPackage(ProviderPackageState? previous, string? rollbackPackagePath)
+    {
+        bool canRestorePrevious = previous is not null &&
+                                  !string.IsNullOrWhiteSpace(rollbackPackagePath) &&
+                                  File.Exists(rollbackPackagePath);
+        if (previous is not null && !canRestorePrevious) return;
+        try
+        {
+            RunPowerShell("Get-AppxPackage -Name 'DarksFIDO2.Provider' | Remove-AppxPackage", 60_000);
+            if (canRestorePrevious)
+            {
+                string escaped = rollbackPackagePath!.Replace("'", "''");
+                RunPowerShell($"Add-AppxPackage -Path '{escaped}' -ForceApplicationShutdown", 120_000);
+                string alias = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps", "darksfido2-provider.exe");
+                if (File.Exists(alias))
+                {
+                    using System.Diagnostics.Process? registration = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(alias, "--register") { UseShellExecute = false, CreateNoWindow = true });
+                    registration?.WaitForExit(30_000);
+                }
+            }
+        }
+        catch
+        {
+            // Preserve the installation error. The application-file transaction still
+            // restores the previous desktop installation.
+        }
     }
 
     private static Version ReadProviderPackageVersion(string packagePath)
@@ -216,6 +326,23 @@ internal static class Program
             ?? throw new InvalidOperationException("Unable to start Windows package deployment.");
         if (!process.WaitForExit(timeout)) { process.Kill(true); throw new TimeoutException("Windows package deployment timed out."); }
         if (process.ExitCode != 0) throw new InvalidOperationException("Windows package deployment failed.");
+    }
+
+    private static string RunPowerShellCapture(string command, int timeout)
+    {
+        string encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes("$ErrorActionPreference='Stop';" + command));
+        using System.Diagnostics.Process process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -EncodedCommand {encoded}")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        }) ?? throw new InvalidOperationException("Unable to inspect Windows package deployment.");
+        string output = process.StandardOutput.ReadToEnd();
+        _ = process.StandardError.ReadToEnd();
+        if (!process.WaitForExit(timeout)) { process.Kill(true); throw new TimeoutException("Windows package inspection timed out."); }
+        if (process.ExitCode != 0) throw new InvalidOperationException("Windows package inspection failed.");
+        return output.Trim();
     }
 
     private static void VerifyExtractedPayload(string root)
@@ -285,7 +412,11 @@ internal static class Program
         string fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
         string expectedRoot = Path.GetFullPath(InstallDirectory).TrimEnd(Path.DirectorySeparatorChar);
         string legacyRoot = Path.GetFullPath(LegacyInstallDirectory).TrimEnd(Path.DirectorySeparatorChar);
-        if ((!fullRoot.Equals(expectedRoot, StringComparison.OrdinalIgnoreCase) && !fullRoot.Equals(legacyRoot, StringComparison.OrdinalIgnoreCase)) || !Directory.Exists(fullRoot)) return;
+        bool rollbackRoot = string.Equals(Path.GetDirectoryName(fullRoot), Path.GetDirectoryName(expectedRoot), StringComparison.OrdinalIgnoreCase) &&
+                            Path.GetFileName(fullRoot).StartsWith(Path.GetFileName(expectedRoot) + ".rollback-", StringComparison.OrdinalIgnoreCase);
+        if ((!fullRoot.Equals(expectedRoot, StringComparison.OrdinalIgnoreCase) &&
+             !fullRoot.Equals(legacyRoot, StringComparison.OrdinalIgnoreCase) &&
+             !rollbackRoot) || !Directory.Exists(fullRoot)) return;
         if ((File.GetAttributes(fullRoot) & FileAttributes.ReparsePoint) != 0)
         {
             Directory.Delete(fullRoot, recursive: false);
@@ -293,6 +424,14 @@ internal static class Program
         }
         DeleteContents(fullRoot, preserveFile is null ? null : Path.GetFullPath(preserveFile));
         if (preserveFile is null) Directory.Delete(fullRoot, recursive: false);
+    }
+
+    private sealed class ProviderPackageState
+    {
+        public string PackageFullName { get; set; } = "";
+        public string Version { get; set; } = "";
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Version ParsedVersion => System.Version.Parse(Version);
     }
 
     private static void DeleteContents(string directory, string? preserveFile)

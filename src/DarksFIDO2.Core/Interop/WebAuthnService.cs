@@ -242,6 +242,16 @@ public sealed class WebAuthnService
     }
 
     public void DeletePlatformCredential(FidoKeyRecord credential)
+        => Check(DeletePlatformCredentialCore(credential), "delete platform credential");
+
+    public void DeletePlatformCredentialIfPresent(FidoKeyRecord credential)
+    {
+        int hr = DeletePlatformCredentialCore(credential);
+        if (hr == unchecked((int)0x80090011) || hr == unchecked((int)0x80090016)) return;
+        Check(hr, "delete platform credential");
+    }
+
+    private static int DeletePlatformCredentialCore(FidoKeyRecord credential)
     {
         ArgumentNullException.ThrowIfNull(credential);
         byte[] id = Convert.FromBase64String(credential.CredentialId);
@@ -249,7 +259,7 @@ public sealed class WebAuthnService
         {
             if (id.Length is < 1 or > MaximumCredentialIdBytes) throw new CryptographicException("The credential identifier has an invalid length.");
             using var pinned = new PinnedBytes(id);
-            Check(WebAuthNDeletePlatformCredential(id.Length, pinned.Pointer), "delete platform credential");
+            return WebAuthNDeletePlatformCredential(id.Length, pinned.Pointer);
         }
         finally { CryptographicOperations.ZeroMemory(id); }
     }

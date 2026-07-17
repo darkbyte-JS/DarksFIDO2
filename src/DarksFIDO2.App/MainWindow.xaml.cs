@@ -30,6 +30,7 @@ public partial class MainWindow : Window
     private const int HotkeyId = 0xD2F2;
     private const string VirtualProviderAaguid = "07f654b1-1d48-45b8-ac72-4915efa620c1";
     private const string GitHubUrl = "https://github.com/darkbyte-JS";
+    private static readonly string AppVersion = typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "development";
     private readonly AppPaths _paths = new();
     private readonly TpmService _tpm = new();
     private readonly WebAuthnService _webauthn = new();
@@ -37,6 +38,7 @@ public partial class MainWindow : Window
     private readonly PasskeyProviderContext _passkeyContext = new();
     private readonly SoftwarePasskeyStore _providerStore = new();
     private readonly VaultRepository _repository;
+    private readonly ProfileDeletionService _profileDeletion;
     private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly List<(TextBlock Code, TextBlock Countdown, ProgressBar Progress, TotpEntry Entry)> _totpViews = [];
     private UnlockedProfile? _profile;
@@ -56,6 +58,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         _repository = new VaultRepository(_paths, _tpm);
+        _profileDeletion = new ProfileDeletionService(_providerStore, deletePlatformCredential: _webauthn.DeletePlatformCredentialIfPresent, deleteTpmKey: _tpm.DeleteKeyIfPresent);
         InitializeComponent();
         Loaded += MainWindow_Loaded;
         SourceInitialized += MainWindow_SourceInitialized;
@@ -986,10 +989,10 @@ public partial class MainWindow : Window
             ContentPanel.Children.Add(InfoCard(item.Type + " · " + item.Outcome, item.TimestampUtc.LocalDateTime.ToString("g"), item.Message));
 
         TpmStatus tpm = _tpm.Detect();
-        ContentPanel.Children.Add(SectionTitle("About", "Darks FIDO2 0.4.4"));
+        ContentPanel.Children.Add(SectionTitle("About", "Darks FIDO2 " + AppVersion));
         ContentPanel.Children.Add(InfoCard("Security mode", _profile.Metadata.DeviceProtection + " vault wrapping", tpm.Detail));
         ContentPanel.Children.Add(Banner("Scope", "Darks FIDO2 hardens and encrypts its own data. It is not a replacement for antivirus or EDR software. No telemetry or secret-bearing network calls are implemented.", "success"));
-        ContentPanel.Children.Add(new TextBlock { Text = "CLI: darksfido-cli list-keys | vault-status | check-backups | export-audit --signed --output <path>", Foreground = Muted(), FontFamily = new FontFamily("Cascadia Mono"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 12) });
+        ContentPanel.Children.Add(new TextBlock { Text = "Read-only CLI: darksfido-cli list-keys | vault-status | check-backups", Foreground = Muted(), FontFamily = new FontFamily("Cascadia Mono"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 12) });
     }
 
     private void SetTheme(AppTheme theme)
@@ -1032,8 +1035,11 @@ public partial class MainWindow : Window
         string recovery = VaultCryptography.GenerateRecoveryCode();
         try
         {
-            _repository.ConfigureKeyfile(_profile, pin, current, next, recovery);
-            SecureFile.AtomicWrite(save.FileName, next);
+            if (!string.IsNullOrWhiteSpace(_keyfilePath) &&
+                string.Equals(System.IO.Path.GetFullPath(save.FileName), System.IO.Path.GetFullPath(_keyfilePath), StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Choose a different file name. Keeping the current keyfile untouched provides a recovery path until rotation succeeds.");
+            KeyfileRotationService.WriteThenCommit(save.FileName, next,
+                () => _repository.ConfigureKeyfile(_profile, pin, current, next, recovery));
             _keyfilePath = save.FileName;
             MessageBox.Show(this, "The previous keyfile is now invalid. Store this replacement recovery code separately:\n\n" + recovery, "Keyfile updated", MessageBoxButton.OK, MessageBoxImage.Warning);
             RenderSettings();
@@ -1083,7 +1089,7 @@ public partial class MainWindow : Window
             string? typed = Dialogs.Prompt(this, "Irreversible deletion", "Type the exact profile name to permanently delete its encrypted vault:\n\n" + _profile.Data.ProfileName);
             if (typed is null) return;
             _passkeyContext.Clear(_profile.Metadata.Id);
-            _repository.Delete(_profile, typed); _profile = null; Shell.Visibility = Visibility.Collapsed; GateLayer.Visibility = Visibility.Visible; LoadProfiles();
+            _repository.Delete(_profile, typed, _profileDeletion.DeleteOwnedKeys); _profile = null; Shell.Visibility = Visibility.Collapsed; GateLayer.Visibility = Visibility.Visible; LoadProfiles();
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Profile not deleted", MessageBoxButton.OK, MessageBoxImage.Warning); }
         finally { if (keyfile is not null) CryptographicOperations.ZeroMemory(keyfile); }

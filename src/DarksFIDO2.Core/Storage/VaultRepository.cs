@@ -243,7 +243,8 @@ public sealed class VaultRepository
     {
         // Re-authenticate with the old factors before changing the security policy.
         using (UnlockedProfile verified = Unlock(profile.Metadata.Id, pin, currentKeyfile)) { }
-        ProfileMetadata metadata = profile.Metadata;
+        ProfileMetadata current = profile.Metadata;
+        ProfileMetadata metadata = CloneMetadata(current);
         byte[] newSalt = RandomNumberGenerator.GetBytes(32);
         byte[] factor = VaultCryptography.DeriveFactorKey(pin, newSalt, metadata.Pbkdf2Iterations, newKeyfile);
         try
@@ -273,25 +274,30 @@ public sealed class VaultRepository
                     CryptographicOperations.ZeroMemory(recoveryFactor);
                 }
             }
-            WriteMetadata(metadata);
             ProfileIndex index = LoadIndex();
             int i = index.Profiles.FindIndex(x => x.Id == metadata.Id);
             if (i >= 0) index.Profiles[i] = index.Profiles[i] with { KeyfileRequired = metadata.KeyfileRequired };
             WriteIndex(index);
-            profile.Data.AuditLog.Add(new AuditEvent
+            WriteMetadata(metadata);
+            CopyMetadata(metadata, current);
+            var audit = new AuditEvent
             {
                 Type = "Security",
                 Message = newKeyfile is null ? "Master keyfile requirement disabled." : "Master keyfile enabled or regenerated."
-            });
-            Save(profile);
+            };
+            profile.Data.AuditLog.Add(audit);
+            try { Save(profile); }
+            catch { profile.Data.AuditLog.Remove(audit); }
         }
         finally { CryptographicOperations.ZeroMemory(factor); }
     }
 
-    public void Delete(UnlockedProfile profile, string typedProfileName)
+    public void Delete(UnlockedProfile profile, string typedProfileName, Action<UnlockedProfile> deleteOwnedKeys)
     {
+        ArgumentNullException.ThrowIfNull(deleteOwnedKeys);
         if (!string.Equals(profile.Metadata.Name, typedProfileName, StringComparison.Ordinal))
             throw new InvalidOperationException("The confirmation text does not match the profile name.");
+        deleteOwnedKeys(profile);
         Guid id = profile.Metadata.Id;
         string? wrappingKey = profile.Metadata.DeviceProtection == DeviceProtection.Tpm ? profile.Metadata.TpmWrappingKeyName : null;
         ProfileIndex index = LoadIndex();
@@ -319,7 +325,7 @@ public sealed class VaultRepository
         catch (Exception ex) { cleanupError = ex; }
         if (!string.IsNullOrWhiteSpace(wrappingKey))
         {
-            try { _tpm.DeleteKey(wrappingKey); }
+            try { _tpm.DeleteKeyIfPresent(wrappingKey); }
             catch (Exception ex) { cleanupError ??= ex; }
         }
         if (cleanupError is not null)
@@ -435,5 +441,35 @@ public sealed class VaultRepository
         CryptographicOperations.ZeroMemory(json);
         try { SecureFile.AtomicWrite(_paths.IndexPath, protectedBytes); }
         finally { CryptographicOperations.ZeroMemory(protectedBytes); }
+    }
+
+    private static ProfileMetadata CloneMetadata(ProfileMetadata value) => new()
+    {
+        Id = value.Id,
+        Name = value.Name,
+        CreatedUtc = value.CreatedUtc,
+        Salt = value.Salt.ToArray(),
+        Pbkdf2Iterations = value.Pbkdf2Iterations,
+        KeyfileRequired = value.KeyfileRequired,
+        KeyfileHash = value.KeyfileHash?.ToArray(),
+        DeviceProtection = value.DeviceProtection,
+        ProtectedWrappedMasterKey = value.ProtectedWrappedMasterKey.ToArray(),
+        TpmWrappingKeyName = value.TpmWrappingKeyName,
+        ProtectedRecoveryWrappedMasterKey = value.ProtectedRecoveryWrappedMasterKey?.ToArray(),
+        RecoverySalt = value.RecoverySalt?.ToArray()
+    };
+
+    private static void CopyMetadata(ProfileMetadata source, ProfileMetadata target)
+    {
+        target.Name = source.Name;
+        target.Salt = source.Salt;
+        target.Pbkdf2Iterations = source.Pbkdf2Iterations;
+        target.KeyfileRequired = source.KeyfileRequired;
+        target.KeyfileHash = source.KeyfileHash;
+        target.DeviceProtection = source.DeviceProtection;
+        target.ProtectedWrappedMasterKey = source.ProtectedWrappedMasterKey;
+        target.TpmWrappingKeyName = source.TpmWrappingKeyName;
+        target.ProtectedRecoveryWrappedMasterKey = source.ProtectedRecoveryWrappedMasterKey;
+        target.RecoverySalt = source.RecoverySalt;
     }
 }

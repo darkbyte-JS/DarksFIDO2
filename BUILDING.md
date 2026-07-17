@@ -12,9 +12,11 @@ Requirements:
 dotnet restore DarksFIDO2.slnx --locked-mode
 dotnet build DarksFIDO2.slnx -c Release --no-restore
 dotnet run --project tests\DarksFIDO2.Tests\DarksFIDO2.Tests.csproj -c Release --no-build
+dotnet run --project tests\DarksFIDO2.BrowserTests\DarksFIDO2.BrowserTests.csproj -c Release --no-build
 ```
 
 Use `-- --require-tpm` on the test command when the machine is expected to provide TPM 2.0 and hardware-backed passkey keys.
+The browser test launches the installed Microsoft Edge channel and uses Chromium's WebAuthn virtual-authenticator API. It validates a browser create/get ceremony, not the installed Darks FIDO2 MSIX provider.
 
 ## Signed release build
 

@@ -24,5 +24,7 @@ jobs:
         run: dotnet build DarksFIDO2.slnx -c Release --no-restore
       - name: Test
         run: dotnet run --project tests/DarksFIDO2.Tests/DarksFIDO2.Tests.csproj -c Release --no-build
+      - name: Browser WebAuthn ceremony
+        run: dotnet run --project tests/DarksFIDO2.BrowserTests/DarksFIDO2.BrowserTests.csproj -c Release --no-build
       - name: Audit NuGet dependencies
         run: dotnet list DarksFIDO2.slnx package --vulnerable --include-transitive

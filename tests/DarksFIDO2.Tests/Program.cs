@@ -18,7 +18,9 @@ var tests = new List<(string Name, Action Test)>
     ("TPM detection", () => TestTpmDetection(requireTpm)),
     ("AES-GCM + HMAC tamper detection", TestVaultCrypto),
     ("Profile PIN + keyfile isolation and recovery", TestProfiles),
+    ("Failure-safe keyfile rotation", TestKeyfileRotation),
     ("Transactional profile deletion", TestProfileDeletion),
+    ("Profile-owned key cleanup", TestProfileOwnedKeyCleanup),
     ("Password-encrypted backup integrity", TestBackup),
     ("ECDSA signed audit export", TestAudit),
     ("Audit private key zeroed on lock", TestAuditKeyZeroing)
@@ -153,13 +155,82 @@ static void TestProfileDeletion()
         UnlockedProfile profile = repo.CreateProfile(new ProfileCreationRequest("Delete me", "Delete-Profile-7", null, null));
         Guid id = profile.Metadata.Id;
         string profileDirectory = repo.Paths.ProfileDirectory(id);
-        repo.Delete(profile, "Delete me");
+        bool cleanupCalled = false;
+        repo.Delete(profile, "Delete me", _ => cleanupCalled = true);
+        Assert(cleanupCalled, "Profile deletion skipped the required owned-key cleanup phase.");
         Assert(profile.IsDisposed, "Deleted profile key material remained unlocked.");
         Assert(!Directory.Exists(profileDirectory), "Deleted profile files remained in the active profile directory.");
         ProfileIndex index = repo.LoadIndex();
         Assert(index.Profiles.Count == 0 && index.LastProfileId is null, "The deleted profile remained in the profile index.");
     }
     finally { Directory.Delete(root, true); }
+}
+
+static void TestKeyfileRotation()
+{
+    string root = TempDirectory();
+    string currentPath = Path.Combine(root, "current.dfkey");
+    string nextPath = Path.Combine(root, "next.dfkey");
+    byte[] current = VaultCryptography.GenerateKeyfile();
+    byte[] next = VaultCryptography.GenerateKeyfile();
+    try
+    {
+        SecureFile.AtomicWrite(currentPath, current);
+        AssertThrows<InvalidOperationException>(
+            () => KeyfileRotationService.WriteThenCommit(nextPath, next, () => throw new InvalidOperationException("simulated vault write failure")),
+            "A simulated vault failure was not surfaced.");
+        Assert(File.Exists(currentPath) && CryptographicOperations.FixedTimeEquals(File.ReadAllBytes(currentPath), current),
+            "The current keyfile changed after a failed rotation.");
+        Assert(!File.Exists(nextPath), "An uncommitted replacement keyfile remained after rollback.");
+
+        KeyfileRotationService.WriteThenCommit(nextPath, next,
+            () => Assert(File.Exists(nextPath), "The replacement keyfile was not durable before the vault policy commit."));
+        Assert(CryptographicOperations.FixedTimeEquals(File.ReadAllBytes(nextPath), next), "The committed replacement keyfile changed.");
+    }
+    finally
+    {
+        CryptographicOperations.ZeroMemory(current);
+        CryptographicOperations.ZeroMemory(next);
+        Directory.Delete(root, true);
+    }
+}
+
+static void TestProfileOwnedKeyCleanup()
+{
+    string root = TempDirectory();
+    var store = new SoftwarePasskeyStore(root);
+    Guid targetId = Guid.NewGuid();
+    Guid otherId = Guid.NewGuid();
+    SoftwarePasskeyCredential target = store.Create("target.example", "Target", RandomNumberGenerator.GetBytes(16), "target", "Target", targetId);
+    SoftwarePasskeyCredential other = store.Create("other.example", "Other", RandomNumberGenerator.GetBytes(16), "other", "Other", otherId);
+    var profile = new UnlockedProfile(
+        new ProfileMetadata { Id = targetId, Name = "Cleanup test" },
+        new VaultData { ProfileId = targetId, ProfileName = "Cleanup test" },
+        RandomNumberGenerator.GetBytes(32));
+    profile.Data.TpmKeys.Add(new TpmKeyRecord { Name = "Profile key", ProviderKeyName = $"DarksFIDO2.Key.{Guid.NewGuid():N}" });
+    profile.Data.FidoKeys.Add(new FidoKeyRecord { Name = "Platform key", Type = "Platform / Windows Hello", AuthenticatorId = "Windows", CredentialId = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)) });
+    var metadataRemoved = new List<string>();
+    var platformRemoved = new List<string>();
+    var tpmRemoved = new List<string>();
+    try
+    {
+        var cleanup = new ProfileDeletionService(
+            store,
+            credential => metadataRemoved.Add(Convert.ToHexString(credential.CredentialId)),
+            credential => platformRemoved.Add(credential.Name),
+            name => tpmRemoved.Add(name));
+        cleanup.DeleteOwnedKeys(profile);
+        Assert(metadataRemoved.Count == 1 && metadataRemoved[0] == Convert.ToHexString(target.CredentialId), "Provider metadata cleanup crossed a profile boundary.");
+        Assert(platformRemoved.SequenceEqual(["Platform key"]), "The profile platform credential was not removed.");
+        Assert(tpmRemoved.Count == 1, "The profile TPM key was not removed.");
+        Assert(store.List().Count == 1 && store.Find(otherId, other.CredentialId) is not null, "Provider cleanup deleted another profile's credential.");
+    }
+    finally
+    {
+        profile.Dispose();
+        store.RemoveProfile(otherId);
+        Directory.Delete(root, true);
+    }
 }
 
 static void TestBackup()

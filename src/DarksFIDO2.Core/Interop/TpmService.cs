@@ -197,6 +197,26 @@ public sealed class TpmService
         }
     }
 
+    public void DeleteKeyIfPresent(string providerKeyName)
+    {
+        ValidateOwnedKeyName(providerKeyName, wrappingKey: providerKeyName?.StartsWith("DarksFIDO2.Vault.", StringComparison.Ordinal) == true);
+        IntPtr provider = OpenProvider();
+        IntPtr key = IntPtr.Zero;
+        try
+        {
+            int status = NCryptOpenKey(provider, out key, providerKeyName!, 0, 0);
+            if (status == unchecked((int)0x80090016)) return; // NTE_BAD_KEYSET: already absent.
+            Check(status, "open TPM key");
+            Check(NCryptDeleteKey(key, 0), "delete TPM key");
+            key = IntPtr.Zero;
+        }
+        finally
+        {
+            if (key != IntPtr.Zero) NCryptFreeObject(key);
+            NCryptFreeObject(provider);
+        }
+    }
+
     private static void ValidateOwnedKeyName(string keyName, bool wrappingKey)
     {
         string prefix = wrappingKey ? "DarksFIDO2.Vault." : "DarksFIDO2.Key.";
