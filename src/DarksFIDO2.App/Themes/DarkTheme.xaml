@@ -1,0 +1,109 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Neumorphic Dark Palette Tokens -->
+    <Color x:Key="AppBackgroundColor">#12151E</Color>
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+
+    <Color x:Key="PanelBackgroundColor">#181C28</Color>
+    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackgroundColor}" />
+
+    <Color x:Key="SurfaceBackgroundColor">#1E2332</Color>
+    <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="{StaticResource SurfaceBackgroundColor}" />
+
+    <Color x:Key="SurfaceHoverColor">#252C3D</Color>
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="{StaticResource SurfaceHoverColor}" />
+
+    <Color x:Key="SurfaceActiveColor">#131722</Color>
+    <SolidColorBrush x:Key="SurfaceActiveBrush" Color="{StaticResource SurfaceActiveColor}" />
+
+    <!-- Neumorphic Dual Shadow Tokens (Dark Mode) -->
+    <Color x:Key="ShadowAmbientColor">#080A0F</Color>
+    <Color x:Key="ShadowSpecularColor">#2C354A</Color>
+    <SolidColorBrush x:Key="ShadowAmbientBrush" Color="{StaticResource ShadowAmbientColor}" />
+    <SolidColorBrush x:Key="ShadowSpecularBrush" Color="{StaticResource ShadowSpecularColor}" />
+
+    <!-- Recessed / Sunken Well Tokens (Inputs, Inset Wells) -->
+    <Color x:Key="WellBackgroundColor">#0F1219</Color>
+    <SolidColorBrush x:Key="WellBackgroundBrush" Color="{StaticResource WellBackgroundColor}" />
+    <Color x:Key="WellInnerShadowColor">#07080D</Color>
+    <SolidColorBrush x:Key="WellInnerShadowBrush" Color="{StaticResource WellInnerShadowColor}" />
+
+    <!-- Tactile Border Tokens -->
+    <Color x:Key="BorderSubtleColor">#232A3B</Color>
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtleColor}" />
+
+    <Color x:Key="BorderStrongColor">#323C54</Color>
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrongColor}" />
+
+    <Color x:Key="BorderHighlightColor">#3E4B69</Color>
+    <SolidColorBrush x:Key="BorderHighlightBrush" Color="{StaticResource BorderHighlightColor}" />
+
+    <!-- High-Legibility Modern Typography Tokens -->
+    <Color x:Key="TextPrimaryColor">#F1F5F9</Color>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+
+    <Color x:Key="TextSecondaryColor">#94A3B8</Color>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+
+    <Color x:Key="TextDisabledColor">#475569</Color>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}" />
+
+    <!-- Vivid Royal Cobalt Accent Tokens (High Contrast with White Text) -->
+    <Color x:Key="AccentPrimaryColor">#3B82F6</Color>
+    <SolidColorBrush x:Key="AccentPrimaryBrush" Color="{StaticResource AccentPrimaryColor}" />
+
+    <Color x:Key="AccentHoverColor">#60A5FA</Color>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
+
+    <Color x:Key="AccentActiveColor">#1D4ED8</Color>
+    <SolidColorBrush x:Key="AccentActiveBrush" Color="{StaticResource AccentActiveColor}" />
+
+    <Color x:Key="AccentGlowColor">#263B82F6</Color>
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="{StaticResource AccentGlowColor}" />
+
+    <!-- Semantic Status Indicators -->
+    <Color x:Key="StatusSuccessColor">#10B981</Color>
+    <SolidColorBrush x:Key="StatusSuccessBrush" Color="{StaticResource StatusSuccessColor}" />
+    <SolidColorBrush x:Key="StatusSuccessTextBrush" Color="#34D399" />
+    <SolidColorBrush x:Key="StatusSuccessBgBrush" Color="#162E25" />
+
+    <Color x:Key="StatusWarningColor">#F59E0B</Color>
+    <SolidColorBrush x:Key="StatusWarningBrush" Color="{StaticResource StatusWarningColor}" />
+    <SolidColorBrush x:Key="StatusWarningTextBrush" Color="#FBBF24" />
+    <SolidColorBrush x:Key="StatusWarningBgBrush" Color="#332412" />
+
+    <Color x:Key="StatusDangerColor">#EF4444</Color>
+    <SolidColorBrush x:Key="StatusDangerBrush" Color="{StaticResource StatusDangerColor}" />
+    <SolidColorBrush x:Key="StatusDangerTextBrush" Color="#F87171" />
+    <SolidColorBrush x:Key="StatusDangerBgBrush" Color="#34181A" />
+
+    <Color x:Key="StatusInfoColor">#38BDF8</Color>
+    <SolidColorBrush x:Key="StatusInfoBrush" Color="{StaticResource StatusInfoColor}" />
+    <SolidColorBrush x:Key="StatusInfoTextBrush" Color="#7DD3FC" />
+    <SolidColorBrush x:Key="StatusInfoBgBrush" Color="#132838" />
+
+    <!-- Unified Cross-Theme Compatibility Aliases -->
+    <SolidColorBrush x:Key="WindowBrush" Color="{StaticResource AppBackgroundColor}" />
+    <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelBackgroundColor}" />
+    <SolidColorBrush x:Key="PanelAltBrush" Color="{StaticResource SurfaceBackgroundColor}" />
+    <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="{StaticResource SurfaceBackgroundColor}" />
+    <SolidColorBrush x:Key="CardHoverBrush" Color="{StaticResource SurfaceHoverColor}" />
+    <SolidColorBrush x:Key="SidePanelBrush" Color="{StaticResource PanelBackgroundColor}" />
+    <SolidColorBrush x:Key="HeaderBrush" Color="{StaticResource PanelBackgroundColor}" />
+    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="SubtleTextBrush" Color="{StaticResource TextDisabledColor}" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentPrimaryColor}" />
+    <SolidColorBrush x:Key="AccentStrongBrush" Color="#0284C7" />
+    <SolidColorBrush x:Key="AccentSurfaceBrush" Color="{StaticResource AccentGlowColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderSubtleColor}" />
+    <SolidColorBrush x:Key="BorderShadowBrush" Color="{StaticResource ShadowAmbientColor}" />
+    <SolidColorBrush x:Key="InputBrush" Color="{StaticResource WellBackgroundColor}" />
+    <SolidColorBrush x:Key="InputTextBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="InputHoverBrush" Color="#141924" />
+    <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#162E25" />
+    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#332412" />
+    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#34181A" />
+
+</ResourceDictionary>

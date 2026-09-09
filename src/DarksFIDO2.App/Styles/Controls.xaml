@@ -1,0 +1,768 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===================================================================
+         NEUMORPHIC SOFT UI SYSTEM (THEMESBERG SPECIFICATION)
+         Dual-Light Physics: 315° Virtual Sun, Ambient Shadow + Specular Edge
+         =================================================================== -->
+
+    <!-- Smooth High-Density ScrollBar -->
+    <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource BorderStrongBrush}" />
+        <Setter Property="Width" Value="6" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="Transparent">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb Background="{DynamicResource BorderStrongBrush}">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="3" Margin="1" />
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ScrollViewer">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollViewer">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ScrollContentPresenter Grid.Column="0" CanContentScroll="{TemplateBinding CanContentScroll}" />
+                        <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Value="{TemplateBinding VerticalOffset}"
+                                   Maximum="{TemplateBinding ScrollableHeight}" ViewportSize="{TemplateBinding ViewportHeight}"
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================
+         TACTILE NEUMORPHIC BUTTONS
+         Convex elevated plate at rest, hover glow, physical spring press
+         =================================================================== -->
+
+    <!-- Primary Tactile Button -->
+    <Style x:Key="BtnPrimary" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="16,7" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="OuterPlate" CornerRadius="8" Background="Transparent">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                                              BlurRadius="10" ShadowDepth="3" Direction="315" Opacity="0.45" />
+                        </Border.Effect>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{DynamicResource BorderHighlightBrush}"
+                                BorderThickness="1" CornerRadius="8"
+                                TextElement.Foreground="#FFFFFF"
+                                TextElement.FontWeight="SemiBold"
+                                Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True"
+                                RenderTransformOrigin="0.5,0.5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="#FFFFFF" TextElement.FontWeight="SemiBold"
+                                              SnapsToDevicePixels="True" />
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.95" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="#FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform Y="1.5" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentActiveBrush}" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="#FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.2" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Secondary Tactile Plate Button -->
+    <Style x:Key="BtnSecondary" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="OuterPlate" CornerRadius="8" Background="Transparent">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                                              BlurRadius="8" ShadowDepth="2.5" Direction="315" Opacity="0.4" />
+                        </Border.Effect>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}"
+                                TextElement.Foreground="{DynamicResource TextPrimaryBrush}"
+                                SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{DynamicResource TextPrimaryBrush}"
+                                              SnapsToDevicePixels="True" />
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform Y="1.5" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceActiveBrush}" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.75" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.2" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Destructive Tactile Button -->
+    <Style x:Key="BtnDanger" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource StatusDangerTextBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource StatusDangerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="OuterPlate" CornerRadius="8" Background="Transparent">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                                              BlurRadius="8" ShadowDepth="2.5" Direction="315" Opacity="0.35" />
+                        </Border.Effect>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}"
+                                TextElement.Foreground="{DynamicResource StatusDangerTextBrush}"
+                                TextElement.FontWeight="SemiBold"
+                                SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{DynamicResource StatusDangerTextBrush}"
+                                              SnapsToDevicePixels="True" />
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource StatusDangerBrush}" />
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="#FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform Y="1.5" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource StatusDangerBrush}" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="#FFFFFF" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.75" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.2" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Compact Micro Tactile Button -->
+    <Style x:Key="BtnMicro" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="OuterPlate" CornerRadius="6" Background="Transparent">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                                              BlurRadius="5" ShadowDepth="1.5" Direction="315" Opacity="0.35" />
+                        </Border.Effect>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True" />
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform Y="1" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceActiveBrush}" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.75" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================
+         RECESSED / SUNKEN INPUT WELLS
+         Concave channel into canvas, inner shading, accent focus glow
+         =================================================================== -->
+
+    <Style x:Key="StandardTextBox" TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource WellBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="CaretBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="7" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="BorderThickness" Value="1.5" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================
+         NEUMORPHIC COMBOBOX / ACCOUNT SELECTOR MENU
+         Recessed trigger well, chevron pill, floating shadow card popup,
+         and high-contrast tactile item selection (pure white on royal blue).
+         =================================================================== -->
+
+    <!-- ComboBox Toggle Button Template -->
+    <ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="{x:Type ToggleButton}">
+        <Border x:Name="Bd"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="8"
+                SnapsToDevicePixels="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="38" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Chevron Down Indicator Pill -->
+                <Border Grid.Column="1" Background="Transparent"
+                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <Path x:Name="Arrow"
+                          Data="{StaticResource IconChevronDown}"
+                          Fill="{DynamicResource TextSecondaryBrush}"
+                          Width="11" Height="11" Stretch="Uniform"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource AccentPrimaryBrush}" />
+            </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter TargetName="Bd" Property="BorderThickness" Value="1.5" />
+                <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource AccentPrimaryBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Bd" Property="Opacity" Value="0.45" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- Neumorphic Dropdown Item Style -->
+    <Style TargetType="{x:Type ComboBoxItem}">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Margin" Value="3,2" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border x:Name="Bd"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="1"
+                            CornerRadius="7"
+                            Padding="{TemplateBinding Padding}"
+                            TextElement.Foreground="{TemplateBinding Foreground}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                          TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Hover: Soft Neumorphic Plate -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                        </Trigger>
+                        <!-- Selected: Royal Cobalt Accent with Crisp Pure White Text -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentActiveBrush}" />
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="#FFFFFF" />
+                            <Setter TargetName="Bd" Property="TextElement.FontWeight" Value="SemiBold" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentActiveBrush}" />
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="#FFFFFF" />
+                            <Setter TargetName="Bd" Property="TextElement.FontWeight" Value="SemiBold" />
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Master Neumorphic ComboBox Style -->
+    <Style x:Key="StandardComboBox" TargetType="{x:Type ComboBox}">
+        <Setter Property="Background" Value="{DynamicResource WellBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Height" Value="42" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="MaxDropDownHeight" Value="280" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBox}">
+                    <Grid>
+                        <!-- Recessed Input Well Toggle -->
+                        <ToggleButton x:Name="ToggleButton"
+                                      Template="{StaticResource ComboBoxToggleButtonTemplate}"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      Focusable="False"
+                                      ClickMode="Press"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                        <!-- Active Selection Content Display -->
+                        <ContentPresenter x:Name="ContentSite"
+                                          IsHitTestVisible="False"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                          Margin="12,0,40,0"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Left"
+                                          TextElement.Foreground="{DynamicResource TextPrimaryBrush}"
+                                          TextElement.FontWeight="Medium" />
+
+                        <!-- Floating Neumorphic Card Dropdown Popup -->
+                        <Popup x:Name="PART_Popup"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               Placement="Bottom"
+                               PopupAnimation="Slide"
+                               VerticalOffset="4">
+                            <Grid x:Name="DropDown"
+                                  SnapsToDevicePixels="True"
+                                  MinWidth="{TemplateBinding ActualWidth}"
+                                  MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <!-- Ambient Deep Shadow Shell -->
+                                <Border Margin="6,4,6,12" Background="Transparent" CornerRadius="10">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                                                          BlurRadius="18" ShadowDepth="6" Direction="315" Opacity="0.45" />
+                                    </Border.Effect>
+                                    <Border Background="{DynamicResource PanelBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderHighlightBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="4">
+                                        <ScrollViewer SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Border>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter TargetName="DropDown" Property="MinHeight" Value="60" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================
+         NEUMORPHIC SEGMENTED TOGGLE BUTTON (FILTER PILL)
+         Elevated convex at rest; sunken concave when active/selected
+         =================================================================== -->
+    <Style TargetType="{x:Type ToggleButton}">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border x:Name="OuterPlate" CornerRadius="7" Background="Transparent">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                                              BlurRadius="5" ShadowDepth="1.5" Direction="315" Opacity="0.3" />
+                        </Border.Effect>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7" Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True" />
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BorderHighlightBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <!-- Sunken concave state -->
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WellBackgroundBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.9" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- RadioButton styled as Neumorphic Segmented Tab -->
+    <Style TargetType="{x:Type RadioButton}">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RadioButton}">
+                    <Border x:Name="OuterPlate" CornerRadius="7" Background="Transparent">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                                              BlurRadius="5" ShadowDepth="1.5" Direction="315" Opacity="0.3" />
+                        </Border.Effect>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7" Padding="{TemplateBinding Padding}"
+                                TextElement.Foreground="{TemplateBinding Foreground}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center" SnapsToDevicePixels="True"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BorderHighlightBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource WellBackgroundBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="TextElement.Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter TargetName="OuterPlate" Property="Opacity" Value="0.9" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================
+         AUTHENTIC NEUMORPHIC DATAGRID (THEMESBERG TABLES)
+         Recessed well header, tactile hover plates, and sculpted row geometry
+         =================================================================== -->
+    <Style x:Key="StandardDataGrid" TargetType="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="RowHeight" Value="44" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="AutoGenerateColumns" Value="False" />
+        <Setter Property="CanUserAddRows" Value="False" />
+        <Setter Property="CanUserDeleteRows" Value="False" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="SelectionMode" Value="Single" />
+        <Setter Property="SelectionUnit" Value="FullRow" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="RowBackground" Value="{DynamicResource PanelBackgroundBrush}" />
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource SurfaceBackgroundBrush}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource WellBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,1,1" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Padding" Value="20,10" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Height" Value="42" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="DataGridRow">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource WellBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                <Setter Property="BorderThickness" Value="0,0,0,2" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="DataGridCell">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="20,0"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter VerticalAlignment="Center" SnapsToDevicePixels="True" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===================================================================
+         NEUMORPHIC CHECKBOX
+         Sunken well indicator plate with accent verification mark
+         =================================================================== -->
+    <Style TargetType="{x:Type CheckBox}">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- Box Well -->
+                        <Border x:Name="Box" Width="18" Height="18" CornerRadius="5"
+                                Background="{DynamicResource WellBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderStrongBrush}"
+                                BorderThickness="1" SnapsToDevicePixels="True"
+                                VerticalAlignment="Center">
+                            <Path x:Name="CheckMark" Data="M3.5 9.5 L7.5 13.5 L14.5 5"
+                                  Stroke="{DynamicResource AccentPrimaryBrush}" StrokeThickness="2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  SnapsToDevicePixels="True" Visibility="Collapsed"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0" />
+                        </Border>
+                        <!-- Label -->
+                        <ContentPresenter Grid.Column="1" Margin="8,0,0,0"
+                                          VerticalAlignment="Center" HorizontalAlignment="Left"
+                                          RecognizesAccessKey="True" SnapsToDevicePixels="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
+

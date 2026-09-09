@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a reproducible non-sensitive defect
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include secrets or security vulnerabilities. Use the private security-reporting path in SECURITY.md."
+  - type: input
+    id: version
+    attributes:
+      label: Darks FIDO2 version
+      placeholder: "0.6.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows version
+      options:
+        - Windows 11 25H2
+        - Windows 11 24H2
+        - Earlier/other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Use a disposable account and remove all secrets and personal data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true

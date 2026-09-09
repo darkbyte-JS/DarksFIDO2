@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DarksFIDO2.App/DarksFIDO2.App.csproj" />
+    <Project Path="src/DarksFIDO2.Cli/DarksFIDO2.Cli.csproj" />
+    <Project Path="src/DarksFIDO2.Core/DarksFIDO2.Core.csproj" />
+    <Project Path="src/DarksFIDO2.Provider/DarksFIDO2.Provider.csproj" />
+    <Project Path="src/DarksFIDO2.Setup/DarksFIDO2.Setup.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DarksFIDO2.BrowserTests/DarksFIDO2.BrowserTests.csproj" />
+    <Project Path="tests/DarksFIDO2.Tests/DarksFIDO2.Tests.csproj" />
+  </Folder>
+</Solution>

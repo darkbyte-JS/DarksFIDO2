@@ -1,0 +1,15 @@
+<UserControl x:Class="DarksFIDO2.App.Controls.StatusPill"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             SnapsToDevicePixels="True">
+    <Border x:Name="PillBorder" CornerRadius="14" Height="28" BorderThickness="1" Padding="10,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+        <Border.Effect>
+            <DropShadowEffect Color="{DynamicResource ShadowAmbientColor}"
+                              BlurRadius="4" ShadowDepth="1.5" Direction="315" Opacity="0.3" />
+        </Border.Effect>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Ellipse x:Name="PillDot" Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" />
+            <TextBlock x:Name="PillText" FontFamily="{StaticResource FontPrimary}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </StackPanel>
+    </Border>
+</UserControl>

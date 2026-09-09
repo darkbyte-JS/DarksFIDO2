@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0-windows7.0": {
+      "Microsoft.Playwright": {
+        "type": "Direct",
+        "requested": "[1.61.0, )",
+        "resolved": "1.61.0",
+        "contentHash": "VM149rQ2Pu+3xAzrO2gvh2WRgrWNbIl0jL9LG2oMC9xKUVYDnUrsh+E/5S+NQToVV4S+yhZ3NHsa6kf1PdHeag==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+          "System.ComponentModel.Annotations": "5.0.0"
+        }
+      },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "UcSjPsst+DfAdJGVDsu346FX0ci0ah+lw3WRtn18NUwEqRt70HaOQ7lI72vy3+1LxtqI3T5GWwV39rQSrCzAeg=="
+      },
+      "System.ComponentModel.Annotations": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
+      }
+    },
+    "net10.0-windows7.0/win-x64": {}
+  }
+}

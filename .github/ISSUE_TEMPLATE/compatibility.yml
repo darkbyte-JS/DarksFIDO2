@@ -1,0 +1,31 @@
+name: Compatibility result
+description: Share a browser, TPM, Windows, or installer test result
+title: "[Compatibility] "
+labels: ["testing", "help wanted"]
+body:
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Windows version/build, browser version, TPM manufacturer/firmware, and install type as applicable.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Test area
+      options:
+        - Browser passkey registration/authentication
+        - TPM vault/key behavior
+        - Setup/MSIX install or upgrade
+        - Portable mode
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Result
+      description: Include exact steps and sanitized errors. Never attach secrets or real account data.
+    validations:
+      required: true

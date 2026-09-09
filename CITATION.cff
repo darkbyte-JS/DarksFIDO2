@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use Darks FIDO2 in research, testing, or documentation, please cite it as below."
+type: software
+authors:
+  - family-names: "darkbyte-JS"
+title: "Darks FIDO2"
+version: 0.6.3
+date-released: 2026-07-17
+license: Apache-2.0
+repository-code: "https://github.com/darkbyte-JS/DarksFIDO2"
+url: "https://github.com/darkbyte-JS/DarksFIDO2"
+keywords:
+  - "FIDO2"
+  - "WebAuthn"
+  - "passkeys"
+  - "TPM 2.0"
+  - "Windows 11"
+  - "TOTP"
+abstract: "An experimental, local-first Windows 11 FIDO2/WebAuthn software authenticator with TPM-backed keys, local passkeys, encrypted profiles, and TOTP."

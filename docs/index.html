@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1024">
+    <meta name="description" content="Darks FIDO2 is an open-source Windows 11 FIDO2/WebAuthn authenticator with TPM-backed keys, local passkeys, encrypted profiles, and TOTP.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://darkbyte-js.github.io/DarksFIDO2/">
+    <link rel="icon" href="assets/social-preview.png" type="image/png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Darks FIDO2">
+    <meta property="og:title" content="Darks FIDO2 — TPM-backed passkeys for Windows 11">
+    <meta property="og:description" content="An open-source local-first virtual FIDO2/WebAuthn authenticator with passkeys, encrypted profiles, and TOTP.">
+    <meta property="og:url" content="https://darkbyte-js.github.io/DarksFIDO2/">
+    <meta property="og:image" content="https://darkbyte-js.github.io/DarksFIDO2/assets/social-preview.png">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="640">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Darks FIDO2 — TPM-backed passkeys for Windows 11">
+    <meta name="twitter:description" content="Open-source Windows 11 FIDO2/WebAuthn authenticator with local passkeys and TOTP.">
+    <meta name="twitter:image" content="https://darkbyte-js.github.io/DarksFIDO2/assets/social-preview.png">
+
+    <title>Darks FIDO2 — TPM-backed passkeys for Windows 11</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Darks FIDO2",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Windows 11",
+        "description": "An open-source Windows 11 FIDO2/WebAuthn authenticator with TPM-backed keys, local passkeys, encrypted profiles, and TOTP.",
+        "softwareVersion": "0.6.4",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "codeRepository": "https://github.com/darkbyte-JS/DarksFIDO2",
+        "downloadUrl": "https://github.com/darkbyte-JS/DarksFIDO2/releases",
+        "image": "https://darkbyte-js.github.io/DarksFIDO2/assets/social-preview.png"
+      }
+    </script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #eef2ff;
+        --muted: #b8c1df;
+        --surface: rgba(18, 25, 60, .72);
+        --line: rgba(152, 171, 255, .22);
+        --aqua: #2be5d1;
+        --violet: #9266ff;
+        --navy: #070b1d;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 10% 0%, rgba(43, 229, 209, .15), transparent 28rem),
+          radial-gradient(circle at 92% 8%, rgba(146, 102, 255, .22), transparent 30rem),
+          var(--navy);
+        line-height: 1.55;
+      }
+      a { color: inherit; text-decoration: none; }
+      a:focus-visible { outline: 3px solid var(--aqua); outline-offset: 4px; border-radius: 4px; }
+      .shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+      .nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 0; }
+      .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 760; letter-spacing: -.02em; }
+      .brand img { width: 34px; height: 34px; object-fit: contain; }
+      .nav-links { display: flex; gap: 22px; color: var(--muted); font-size: .94rem; }
+      .nav-links a:hover { color: var(--ink); }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); align-items: center; gap: 56px; padding: 76px 0 78px; }
+      .eyebrow { margin: 0 0 16px; color: var(--aqua); font-size: .84rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+      h1 { max-width: 760px; margin: 0; font-size: clamp(2.5rem, 6vw, 4.9rem); line-height: 1.03; letter-spacing: -.055em; }
+      .lede { max-width: 660px; margin: 25px 0 0; color: var(--muted); font-size: clamp(1.08rem, 2.1vw, 1.28rem); }
+      .notice { display: inline-flex; margin: 22px 0 0; padding: 7px 11px; color: #e4d9ff; border: 1px solid rgba(180, 131, 255, .45); border-radius: 999px; background: rgba(132, 83, 210, .16); font-size: .83rem; font-weight: 700; }
+      .actions { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 30px; }
+      .button { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 18px; border: 1px solid transparent; border-radius: 10px; font-weight: 720; transition: transform .18s ease, background .18s ease; }
+      .button:hover { transform: translateY(-2px); }
+      .button.primary { color: #071429; background: linear-gradient(135deg, var(--aqua), #56c4ff); }
+      .button.secondary { color: var(--ink); border-color: var(--line); background: rgba(17, 25, 58, .55); }
+      .hero-art { position: relative; min-height: 388px; overflow: hidden; border: 1px solid var(--line); border-radius: 26px; background: linear-gradient(155deg, #132858 0%, #120d32 58%, #0a1129 100%); box-shadow: 0 24px 70px rgba(0, 0, 0, .26); }
+      .hero-art::before { position: absolute; inset: 0; background: radial-gradient(circle at 30% 23%, rgba(47, 234, 207, .18), transparent 25%), radial-gradient(circle at 85% 74%, rgba(142, 91, 255, .35), transparent 25%); content: ""; }
+      .hero-art img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; min-height: 388px; object-fit: cover; object-position: center; }
+      .content { padding: 72px 0 88px; border-top: 1px solid var(--line); }
+      .section-intro { max-width: 700px; }
+      h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.75rem); letter-spacing: -.04em; }
+      .section-intro p { color: var(--muted); font-size: 1.08rem; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 17px; margin-top: 34px; }
+      .card { min-height: 190px; padding: 25px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+      .card .number { color: var(--aqua); font-size: .82rem; font-weight: 800; letter-spacing: .1em; }
+      h3 { margin: 13px 0 7px; font-size: 1.13rem; }
+      .card p { margin: 0; color: var(--muted); font-size: .97rem; }
+      .quick { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 56px; }
+      .panel { padding: 30px; border: 1px solid var(--line); border-radius: 18px; background: rgba(12, 18, 45, .78); }
+      .panel p, .panel li { color: var(--muted); }
+      .panel ol { margin: 17px 0 0; padding-left: 22px; }
+      .panel li + li { margin-top: 8px; }
+      .panel a { color: var(--aqua); text-decoration: underline; text-underline-offset: 3px; }
+      footer { padding: 30px 0 44px; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+      footer .shell { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+      @media (max-width: 760px) {
+        .nav-links { display: none; }
+        .hero { grid-template-columns: 1fr; gap: 36px; padding-top: 48px; }
+        .hero-art { min-height: 250px; }
+        .hero-art img { min-height: 250px; }
+        .grid, .quick { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="shell nav">
+      <a class="brand" href="./" aria-label="Darks FIDO2 home">
+        <img src="assets/social-preview.png" alt="">
+        <span>Darks FIDO2</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#what-it-does">What it does</a>
+        <a href="#get-started">Get started</a>
+        <a href="https://github.com/darkbyte-JS/DarksFIDO2">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="shell hero" aria-labelledby="hero-title">
+        <div>
+          <p class="eyebrow">Windows 11 (24H2+) &amp; Windows 10 · FIDO2 · WebAuthn · TPM 2.0</p>
+          <h1 id="hero-title">TPM-backed passkeys, under your control.</h1>
+          <p class="lede">Darks FIDO2 is an open-source, local-first virtual FIDO2/WebAuthn authenticator for Windows. It combines silicon hardware passkeys, AES-256-GCM encrypted profiles, an offline RFC 6238 TOTP engine, and a secure password generator into a unified Neumorphic desktop suite.</p>
+          <p class="notice">v0.6.4 Beta Released — Review the limitations before relying on it.</p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/darkbyte-JS/DarksFIDO2/releases">Download v0.6.4</a>
+            <a class="button secondary" href="https://github.com/darkbyte-JS/DarksFIDO2">View source on GitHub</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <img src="assets/app-main-screen.png" alt="Darks FIDO2 v0.6.4 Main Console Interface">
+        </div>
+      </section>
+
+      <section class="content" id="what-it-does">
+        <div class="shell">
+          <div class="section-intro">
+            <p class="eyebrow">What it does</p>
+            <h2>A Windows software authenticator built around local control.</h2>
+            <p>Create and manage local hardware-isolated passkeys, respond to native WebAuthn ceremonies, and generate secure time-based 2FA codes without any cloud reliance.</p>
+          </div>
+          <div class="grid">
+            <article class="card">
+              <div class="number">01</div>
+              <h3>FIDO2 and WebAuthn</h3>
+              <p>Functions as a registered native Windows 11 passkey provider companion for browser and desktop WebAuthn create and get requests.</p>
+            </article>
+            <article class="card">
+              <div class="number">02</div>
+              <h3>Silicon TPM 2.0 Enclave</h3>
+              <p>Derives non-exportable ES256 hardware keys via Microsoft Platform Crypto Provider with direct TBS diagnostics and explicit key deletion.</p>
+            </article>
+            <article class="card">
+              <div class="number">03</div>
+              <h3>Encrypted Multi-Profile Vaults</h3>
+              <p>Protects credentials under independent AES-256-GCM vaults with PBKDF2 (600,000 rounds), optional 64-byte physical keyfiles, and DPAPI.</p>
+            </article>
+            <article class="card">
+              <div class="number">04</div>
+              <h3>Flexible Password Generator</h3>
+              <p>5 independent character sets (Digits, Lowercase, Uppercase, Symbols, Extended ASCII), CSPRNG shuffle, zero disk retention, and 10s clipboard wipe.</p>
+            </article>
+            <article class="card">
+              <div class="number">05</div>
+              <h3>RFC 6238 TOTP &amp; Screen Sniper</h3>
+              <p>Offline 2FA authenticator with live countdown meters, image importing, and an instant on-screen visual QR code sniper.</p>
+            </article>
+            <article class="card">
+              <div class="number">06</div>
+              <h3>Signed Audit Chain</h3>
+              <p>Tamper-evident ECDSA-signed CSV audit logging with cryptographic in-memory key scrubbing upon vault lock or disposal.</p>
+            </article>
+          </div>
+
+          <div style="margin-top: 56px;">
+            <div class="section-intro">
+              <p class="eyebrow">Big Release</p>
+              <h2>What's New in v0.6.4</h2>
+              <p>Major usability, security, and interface enhancements across the entire stack:</p>
+            </div>
+            <div class="grid">
+              <article class="card">
+                <div class="number">NEW</div>
+                <h3>5-Set Password Generator</h3>
+                <p>Generate high-entropy passwords with independent toggles for all character sets. Zero disk persistence and 10s auto-clearing clipboard.</p>
+              </article>
+              <article class="card">
+                <div class="number">FIX</div>
+                <h3>6-Character Master PIN</h3>
+                <p>Standardized master PIN requirement to strictly 6 characters across UI, storage, and validation layers, eliminating creation lockouts.</p>
+              </article>
+              <article class="card">
+                <div class="number">CORE</div>
+                <h3>Dynamic Vault Discovery</h3>
+                <p>Automatically scans local app storage for unindexed vault directories to ensure no profiles are ever lost during transitions.</p>
+              </article>
+              <article class="card">
+                <div class="number">SEC</div>
+                <h3>TPM Key Deletion</h3>
+                <p>Safely erase silicon-derived TPM hardware keys from the UI with interactive confirmation, NCrypt cleanup, and audit logging.</p>
+              </article>
+              <article class="card">
+                <div class="number">SEC</div>
+                <h3>PIN-Protected Secret Masking</h3>
+                <p>Masks raw Credential IDs and Public Keys by default in the Credentials Inspector, requiring Master PIN verification to reveal.</p>
+              </article>
+              <article class="card">
+                <div class="number">UI</div>
+                <h3>Neumorphic UI Polish</h3>
+                <p>20px left-aligned table spacing, responsive wrapping toolbar, standardized status capsules, and 23/23 passing automated tests.</p>
+              </article>
+            </div>
+          </div>
+
+          <div style="margin-top: 56px;">
+            <div class="section-intro">
+              <p class="eyebrow">Interface Showcase</p>
+              <h2>Tactile Soft UI with Zero OS Dialogs</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
+              <div style="border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); padding: 12px;">
+                <img src="assets/app-main-screen.png" alt="Credentials Console" style="width: 100%; border-radius: 10px; display: block;">
+                <p style="margin: 12px 0 4px; color: var(--muted); font-size: 0.92rem; text-align: center; font-weight: 600;">Main Credentials Console &amp; Inspector Drawer</p>
+              </div>
+              <div style="border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); padding: 12px;">
+                <img src="assets/app-profile-screen.png" alt="Secure Gate Screen" style="width: 100%; border-radius: 10px; display: block;">
+                <p style="margin: 12px 0 4px; color: var(--muted); font-size: 0.92rem; text-align: center; font-weight: 600;">Biometric Gate &amp; Profile Authentication</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick" id="get-started">
+            <section class="panel">
+              <p class="eyebrow">Quick start</p>
+              <h2>Try the beta responsibly.</h2>
+              <ol>
+                <li>Download the v0.6.4 release from the <a href="https://github.com/darkbyte-JS/DarksFIDO2/releases">GitHub Releases page</a>.</li>
+                <li>Trust the attached <code>Darkbyte-INC.cer</code> public certificate in your Current User Trusted People store.</li>
+                <li>Run <code>DarksFIDO2-Setup.exe</code> and enable Darks FIDO2 under Windows Settings &gt; Accounts &gt; Passkeys.</li>
+                <li>Create an encrypted profile (min 6-character PIN) and test with disposable credentials first.</li>
+              </ol>
+            </section>
+            <section class="panel">
+              <p class="eyebrow">Trust and transparency</p>
+              <h2>Open source, with clear limits.</h2>
+              <p>Darks FIDO2 is Apache-2.0 licensed and experimental. Review the <a href="https://github.com/darkbyte-JS/DarksFIDO2/blob/main/SECURITY.md">security policy</a>, <a href="https://github.com/darkbyte-JS/DarksFIDO2/blob/main/docs/THREAT-MODEL.md">threat model</a>, <a href="https://github.com/darkbyte-JS/DarksFIDO2/blob/main/docs/SECURITY-AUDIT-0.6.4.md">security audit (0.6.4)</a>, <a href="https://github.com/darkbyte-JS/DarksFIDO2/blob/main/docs/RELEASE-NOTES-0.6.4.md">release notes</a>, and <a href="https://github.com/darkbyte-JS/DarksFIDO2/blob/main/docs/COMPATIBILITY.md">compatibility notes</a> before use.</p>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell">
+        <span>© 2026 darkbyte-JS · Apache-2.0</span>
+        <a href="https://github.com/darkbyte-JS">github.com/darkbyte-JS</a>
+      </div>
+    </footer>
+  </body>
+</html>

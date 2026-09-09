@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0-windows7.0": {
+      "ZXing.Net": {
+        "type": "Direct",
+        "requested": "[0.16.11, )",
+        "resolved": "0.16.11",
+        "contentHash": "OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg=="
+      },
+      "darksfido2.core": {
+        "type": "Project"
+      }
+    },
+    "net10.0-windows7.0/win-x64": {}
+  }
+}

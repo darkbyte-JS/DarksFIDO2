@@ -1,0 +1,41 @@
+# Build and IDE output
+**/bin/
+**/obj/
+.vs/
+.idea/
+artifacts/
+tmp/
+TestResults/
+*.user
+*.suo
+
+# Installer payloads and release binaries are generated, never source
+src/DarksFIDO2.Setup/Payload/*
+*.exe
+*.dll
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+*.zip
+
+# Signing material and trust artifacts
+*.pfx
+*.p12
+*.pem
+*.key
+*.snk
+*.cer
+
+# Local vaults, diagnostics, and QA captures
+**/DarksFIDO2-Data/
+provider-status.txt
+provider-live-status.txt
+selection-qa*.png
+ui-qa*.png
+*.log
+
+# Operating-system noise
+Thumbs.db
+Desktop.ini
+.DS_Store

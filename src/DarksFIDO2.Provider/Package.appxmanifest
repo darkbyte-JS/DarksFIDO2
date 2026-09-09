@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap5 com rescap">
+  <Identity Name="DarksFIDO2.Provider" Publisher="__PUBLISHER__" Version="__VERSION__" ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>Darks FIDO2 Passkey Provider</DisplayName>
+    <PublisherDisplayName>Darks FIDO2 Project</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.26100.6725" MaxVersionTested="10.0.26200.8655" />
+  </Dependencies>
+  <Resources><Resource Language="en-us" /></Resources>
+  <Applications>
+    <Application Id="Provider" Executable="DarksFIDO2.Provider.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="Darks FIDO2 Passkey Provider" Description="TPM-backed virtual WebAuthn passkey provider" BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" AppListEntry="none" />
+      <Extensions>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="DarksFIDO2.Provider.exe" Arguments="--com-server" DisplayName="Darks FIDO2 Passkey Provider">
+              <com:Class Id="AA84D912-9B38-4E8F-B37E-7C95687A2D41" DisplayName="Darks FIDO2 Passkey Provider" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+        <uap5:Extension Category="windows.appExecutionAlias" Executable="DarksFIDO2.Provider.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap5:AppExecutionAlias><uap5:ExecutionAlias Alias="darksfido2-provider.exe" /></uap5:AppExecutionAlias>
+        </uap5:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Capabilities><rescap:Capability Name="runFullTrust" /></Capabilities>
+</Package>
